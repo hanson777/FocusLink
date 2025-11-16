@@ -67,8 +67,10 @@ class Task(SQLModel, table=True):
     )
 
     user_uid: Optional[uuid.UUID] = Field(foreign_key="users.uid")
-    title: str
-    description: str
+    minutes_goal: int
+    session_goal: int
+    current_minutes: int = Field(default=0)
+    current_sessions: int = Field(default=0)
     created_at: datetime = Field(
         sa_column=Column(
             pg.TIMESTAMP,
