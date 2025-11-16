@@ -2,9 +2,25 @@ import TodayStatsCard from "../components/Stats/TodayStatsCard";
 import WeeklyStatsCard from "../components/Stats/WeeklyStatsCard";
 import UserProfileCard from "../components/UserProfile/UserProfileCard";
 import Navbar from "../components/Navbar/Navbar";
-// unused imports removed
 
-export default function Profile({ onBack, onNavigate }) {
+export default function Profile({ viewingUsername = null, onBack, onNavigate }) {
+    // If viewingUsername is null, show current user's profile
+    // Otherwise, show the friend's profile
+    const isOwnProfile = viewingUsername === null;
+    
+    // For now, using default props from UserProfileCard
+    // In a real app, you would fetch user data based on viewingUsername
+    const profileData = {
+        username: viewingUsername || "John", // Replace with actual current user
+        status: "Focusing",
+        lifetimeStats: {
+            totalSessions: 42,
+            totalMinutes: 2100,
+            longestStreak: 6,
+            averageSession: 38,
+        }
+    };
+
     return (
         <div className="min-h-screen bg-bg text-text">
             <main className="p-10">
@@ -18,15 +34,21 @@ export default function Profile({ onBack, onNavigate }) {
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
-                        <UserProfileCard />
-                        <div>
-                            <TodayStatsCard />
-                            <WeeklyStatsCard />
-                        </div>
-                    </div>
-                </div>
-            </main>
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <UserProfileCard 
+                                                username={profileData.username}
+                                                status={profileData.status}
+                                                lifetimeStats={profileData.lifetimeStats}
+                                            />
+                                            {isOwnProfile && (
+                                                <div>
+                                                    <TodayStatsCard />
+                                                    <WeeklyStatsCard />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </main>
         </div>
     )
 }

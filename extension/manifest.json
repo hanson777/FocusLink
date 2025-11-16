@@ -13,7 +13,7 @@
       "*://*.instagram.com/*",
       "*://*.youtube.com/*",
       "*://*.netflix.com/*",
-      "http://127.0.0.1:8000/*"     
+      "https://undelved-censorable-ethan.ngrok-free.dev/"   
     ],
     "background": {
       "service_worker": "background.js"
