@@ -1,4 +1,4 @@
-const API_BASE = "https://undelved-censorable-ethan.ngrok-free.dev";
+const API_BASE = "https://student-focus-app-backend.onrender.com";
 
 
 // ---------- BLOCKING HELPERS ----------
@@ -167,93 +167,121 @@ function renderInlineLoginScreen() {
 
 // ---------- REGISTER SCREEN (INSIDE EXTENSION) ----------
 function renderRegisterScreen() {
-  document.getElementById("popup").innerHTML = `
-    <div class='card'>
-      <h3>Focus App</h3>
-      <p style="font-size:12px;">
-        Create a new Focus account.
-      </p>
+    document.getElementById("popup").innerHTML = `
+      <div class='card'>
+        <h3>Focus App</h3>
+        <p style="font-size:12px;">
+          Create a new Focus account.
+        </p>
   
-      <label style="font-size:12px;">Username</label>
-      <input id="regUsername" type="text" placeholder="yourusername" />
+        <label style="font-size:12px;">Username</label>
+        <input id="regUsername" type="text" placeholder="yourusername" />
   
-      <label style="font-size:12px; margin-top:6px; display:block;">Email</label>
-      <input id="regEmail" type="email" placeholder="you@example.com" />
+        <label style="font-size:12px; margin-top:6px; display:block;">Email</label>
+        <input id="regEmail" type="email" placeholder="you@example.com" />
   
-      <label style="font-size:12px; margin-top:6px; display:block;">First name</label>
-      <input id="regFirstName" type="text" placeholder="Annie" />
+        <label style="font-size:12px; margin-top:6px; display:block;">First name</label>
+        <input id="regFirstName" type="text" placeholder="Annie" />
   
-      <label style="font-size:12px; margin-top:6px; display:block;">Last name</label>
-      <input id="regLastName" type="text" placeholder="Zhang" />
+        <label style="font-size:12px; margin-top:6px; display:block;">Last name</label>
+        <input id="regLastName" type="text" placeholder="Zhang" />
   
-      <label style="font-size:12px; margin-top:6px; display:block;">Password</label>
-      <input id="regPassword" type="password" placeholder="••••••••" />
+        <label style="font-size:12px; margin-top:6px; display:block;">Password</label>
+        <input id="regPassword" type="password" placeholder="••••••••" />
   
-      <button id="registerBtn">Sign up</button>
-      <button id="backBtn" style="margin-top:6px;">Back</button>
-      <p id="status" style="margin-top:8px; font-size:12px;"></p>
+        <button id="registerBtn">Sign up</button>
+        <button id="backBtn" style="margin-top:6px;">Back</button>
+        <p id="status" style="margin-top:8px; font-size:12px;"></p>
       </div>
     `;
-
-  const statusEl = document.getElementById("status");
-  const registerBtn = document.getElementById("registerBtn");
-  const backBtn = document.getElementById("backBtn");
-
-  registerBtn.addEventListener("click", async () => {
-    const username = document.getElementById("regUsername").value.trim();
-    const email = document.getElementById("regEmail").value.trim();
-    const firstName = document.getElementById("regFirstName").value.trim();
-    const lastName = document.getElementById("regLastName").value.trim();
-    const password = document.getElementById("regPassword").value.trim();
-
-    if (!username || !email || !firstName || !lastName || !password) {
-      statusEl.textContent = "Please fill in all fields.";
-      return;
-    }
-
-    statusEl.textContent = "Creating your account...";
-
-    try {
-      const res = await fetch(`${API_BASE}/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({
-          username,
-          email,
-          password,
-          first_name: firstName,
-          last_name: lastName
-        })
-      });
-
-      const body = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        if (res.status === 400 && body.detail) {
-          // e.g. "Username already registered" / "Email already registered"
-          statusEl.textContent = body.detail;
-        } else {
-          statusEl.textContent = "Server error. Please try again.";
-        }
+  
+    const statusEl = document.getElementById("status");
+    const registerBtn = document.getElementById("registerBtn");
+    const backBtn = document.getElementById("backBtn");
+  
+    registerBtn.addEventListener("click", async () => {
+      const username  = document.getElementById("regUsername").value.trim();
+      const email     = document.getElementById("regEmail").value.trim();
+      const firstName = document.getElementById("regFirstName").value.trim();
+      const lastName  = document.getElementById("regLastName").value.trim();
+      const password  = document.getElementById("regPassword").value.trim();
+  
+      if (!username || !email || !firstName || !lastName || !password) {
+        statusEl.textContent = "Please fill in all fields.";
         return;
       }
-
-      // Backend returns a UserModel, no token.
-      statusEl.textContent = "Account created! Please log in.";
-      setTimeout(renderInlineLoginScreen, 600);
-    } catch (err) {
-      console.error("Register/network error:", err);
-      statusEl.textContent = "Network error. Please try again.";
-    }
-  });
-
-  backBtn.addEventListener("click", () => {
-    renderConnectScreen();
-  });
-}
+  
+      // Simple extra check so users see nicer errors
+      if (!email.includes("@")) {
+        statusEl.textContent = "Please enter a valid email address.";
+        return;
+      }
+  
+      statusEl.textContent = "Creating your account...";
+      registerBtn.disabled = true;
+  
+      try {
+        const res = await fetch(`${API_BASE}/auth/register`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({
+            // 🔐 MUST match UserCreateModel exactly
+            username: username,
+            email: email,
+            first_name: firstName,
+            last_name: lastName,
+            password: password,
+          })
+        });
+  
+        const rawText = await res.text();
+        let body;
+        try {
+          body = rawText ? JSON.parse(rawText) : null;
+        } catch {
+          body = null;
+        }
+  
+        console.log("[Register] status:", res.status);
+        console.log("[Register] body:", body ?? rawText);
+  
+        if (!res.ok) {
+          // 400 from your backend: username/email already registered, etc.
+          if (res.status === 400 && body && body.detail) {
+            statusEl.textContent =
+              typeof body.detail === "string"
+                ? body.detail
+                : JSON.stringify(body.detail);
+          }
+          // 422: FastAPI validation error (wrong/missing fields)
+          else if (res.status === 422 && body && body.detail) {
+            statusEl.textContent =
+              "Validation error: " + JSON.stringify(body.detail);
+          } else {
+            statusEl.textContent =
+              `Server error (${res.status}). Please try again.`;
+          }
+          registerBtn.disabled = false;
+          return;
+        }
+  
+        // ✅ Success: backend returned UserModel
+        statusEl.textContent = "Account created! Please log in.";
+        setTimeout(renderInlineLoginScreen, 600);
+      } catch (err) {
+        console.error("Register/network error:", err);
+        statusEl.textContent = "Network error. Please try again.";
+        registerBtn.disabled = false;
+      }
+    });
+  
+    backBtn.addEventListener("click", () => {
+      renderConnectScreen();
+    });
+  }  
 
 // ---- CONNECT SCREEN (CHOOSE LOGIN METHOD) ----
 function renderConnectScreen() {
