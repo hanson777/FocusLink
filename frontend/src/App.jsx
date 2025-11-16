@@ -69,7 +69,7 @@ export default function App() {
             <FriendsCard onFriendClick={(friendUsername) => handleViewProfile(friendUsername)} />
           </div>
 
-          <div className="flex flex-col justify-center items-center min-h-full mt-6 md:mt-0">
+          <div className="flex flex-col items-center min-h-full mt-6 md:mt-0">
             <TimerCard timeLeft="25:00" active={false} />
           </div>
 
