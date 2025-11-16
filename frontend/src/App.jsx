@@ -24,7 +24,6 @@ export default function App() {
       <div className="flex flex-wrap gap-10 justify-items-center">
           
         <UserProfileCard className="w-1/3" onClick={() => setPage("profile")} />
-        <QuickActionsCard className="w-1/3" />
         <DailyGoalCard className="w-1/3" />
 
         <TimerCard 
