@@ -31,6 +31,8 @@ export default function FocusTimer() {
   const [customWork, setCustomWork] = useState(50);
   const [customBreak, setCustomBreak] = useState(10);
   const [showSettings, setShowSettings] = useState(false);
+  const [pendingMode, setPendingMode] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const intervalRef = useRef(null);
   const audioRef = useRef(null);
@@ -139,19 +141,28 @@ export default function FocusTimer() {
     else updateStatus("Break");
   }
 
-async function changeMode(newMode) {
-    setIsActive(false);
-    setSessionType("work");
-    setCycleCount(0);
-    setMode(newMode);
+    async function changeMode(newMode) {
+        setIsActive(false);
+        setSessionType("work");
+        setCycleCount(0);
+        setMode(newMode);
 
-    setTimeLeft(
-        newMode === "CUSTOM" 
-        ? customWork * 60 
-        : TIMER_MODES[newMode].work
-    );
-    
-    updateStatus("Idle");
+        setTimeLeft(
+            newMode === "CUSTOM" 
+            ? customWork * 60 
+            : TIMER_MODES[newMode].work
+        );
+
+        updateStatus("Idle");
+    }
+
+    function handleModeClick(newMode) {
+        if (isActive) {
+            setPendingMode(newMode);
+            setShowConfirmModal(true);
+        } else {
+            changeMode(newMode);
+        }   
     }
 
   function updateCustomSettings() {
@@ -202,7 +213,7 @@ async function changeMode(newMode) {
           {Object.entries(TIMER_MODES).map(([key, cfg]) => (
             <button
               key={key}
-              onClick={() => changeMode(key)}
+              onClick={() => handleModeClick(key)}
               className="btn btn-lg px-6 py-3 rounded-lg font-medium transition-all"
             >
               {cfg.name}
@@ -298,6 +309,42 @@ async function changeMode(newMode) {
           </div>
         )}
       </div>
+
+      {showConfirmModal && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="card max-w-sm w-full text-center">
+      <h3 className="section-title mb-2">Switch Mode?</h3>
+      <p className="text-textLight/70 mb-6">
+        Switching modes will stop your current timer and reset progress.
+        Continue?
+      </p>
+
+      <div className="flex justify-center gap-4">
+        <button
+          className="btn px-6 py-3"
+          onClick={() => {
+            changeMode(pendingMode);
+            setShowConfirmModal(false);
+            setPendingMode(null);
+          }}
+        >
+          Yes, Switch
+        </button>
+
+        <button
+          className="btn bg-transparent px-6 py-3"
+          onClick={() => {
+            setShowConfirmModal(false);
+            setPendingMode(null);
+          }}
+        >
+          Cancel
+        </button>
+      </div>
     </div>
+  </div>
+)}
+    </div>
+
   );
 }
