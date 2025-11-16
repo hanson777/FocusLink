@@ -287,7 +287,7 @@ function startTimerSession(payload) {
     // Option 3: open website login page
     openLoginBtn.addEventListener("click", () => {
       chrome.tabs.create({
-        url: "https://student-focus-app-1.onrender.com/"
+        url: "http://localhost:5173/"
       });
       statusEl.textContent =
         "Login page opened. After logging in on the website, reopen this popup.";

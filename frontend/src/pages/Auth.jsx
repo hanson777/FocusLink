@@ -1,6 +1,9 @@
 import { useState } from "react";
 import api from "../api";
 
+const EXTENSION_ID = "afiiiddabldcinjejkijhfhpgomiohjk"; 
+
+
 export default function Auth({ onLogin }) {
   const [mode, setMode] = useState("login"); // "login" or "register"
   const [loading, setLoading] = useState(false);
@@ -32,6 +35,22 @@ export default function Auth({ onLogin }) {
       // Call onLogin callback to update parent state
       if (onLogin) {
         onLogin(response.access_token, response.user);
+      }
+      if (window.chrome?.runtime?.sendMessage) {
+        chrome.runtime.sendMessage(
+          EXTENSION_ID,
+          {
+            type: "focusapp-auth",
+            token: response.access_token,
+            username: response.user.username,
+            uid: response.user.uid,
+          },
+          (res) => {
+            console.log("Extension response:", res);
+          }
+        );
+      } else {
+        console.warn("Chrome extension messaging not available");
       }
     } catch (err) {
       console.error("Login error:", err);
