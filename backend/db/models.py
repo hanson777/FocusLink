@@ -49,50 +49,10 @@ class User(SQLModel, table=True):
         sa_relationship_kwargs={"foreign_keys": "Friend.friend_uid"}
     )
     blocked_websites: Optional[List["BlockedWebsites"]] = Relationship(back_populates="user")
+    study_sessions: Optional[List["StudySession"]] = Relationship(back_populates="user")
 
     def __repr__(self):
         return f"<User(username={self.username}, email={self.email})>"
-
-
-class StudySession(SQLModel, table=True):
-    __tablename__ = "studies"
-    uid: uuid.UUID = Field(
-        sa_column=Column(
-            pg.UUID,
-            nullable=False,
-            primary_key=True, \
-            default=uuid.uuid4,
-        )
-    )
-
-    user_uid: uuid.UUID = Field(
-        sa_column=Column(
-            pg.UUID,
-            ForeignKey("users.uid"),
-            nullable=False
-        )
-    )
-
-    status: str
-    focus_minutes: int
-    stop: bool
-    created_at: datetime = Field(
-        sa_column=Column(
-            pg.TIMESTAMP,
-            nullable=False,
-            default=datetime.now(),
-        ))
-
-    updated_at: datetime = Field(
-        sa_column=Column(
-            pg.TIMESTAMP,
-        )
-    )
-
-    user: Optional[User] = Relationship(back_populates="studies")
-
-    def __repr__(self):
-        return f"<StudySession(user_uid={self.user_uid}, status={self.status})>"
 
 
 class Task(SQLModel, table=True):
@@ -209,19 +169,73 @@ class BlockedWebsites(SQLModel, table=True):
     url: str
     user_uid: Optional[uuid.UUID] = Field(foreign_key="users.uid")
     created_at: datetime = Field(
-    sa_column=Column(
-        pg.TIMESTAMP,
-        nullable=False,
-        default=datetime.now(),
-    ))
+        sa_column=Column(
+            pg.TIMESTAMP,
+            nullable=False,
+            default=datetime.now(),
+        ))
 
     updated_at: datetime = Field(
-    sa_column=Column(
-        pg.TIMESTAMP,
-        nullable=False,
-        default=datetime.now(),
-    )
+        sa_column=Column(
+            pg.TIMESTAMP,
+            nullable=False,
+            default=datetime.now(),
+        )
     )
 
     user: Optional[User] = Relationship(back_populates="blocked_websites")
 
+    def __repr__(self):
+        return f"<BlockedWebsites(user_uid={self.user_uid}, url={self.url})>"
+
+
+class StudySession(SQLModel, table=True):
+    __tablename__ = "studysession"
+    uid: uuid.UUID = Field(
+        sa_column=Column(
+            pg.UUID,
+            nullable=False,
+            primary_key=True,
+            default=uuid.uuid4,
+        ))
+    user_uid: uuid.UUID = Field(
+        sa_column=Column(
+            pg.UUID,
+            ForeignKey("users.uid"),
+            nullable=False
+        )
+    )
+    start_time: datetime = Field(
+        sa_column=Column(
+            pg.TIMESTAMP,
+            nullable=False,
+            default=datetime.now(),
+        )
+    )
+    end_time: datetime = Field(
+        sa_column=Column(
+            pg.TIMESTAMP,
+            nullable=False,
+            default=datetime.now(),
+        )
+    )
+    studying_duration: int
+    created_at: datetime = Field(
+        sa_column=Column(
+            pg.TIMESTAMP,
+            nullable=False,
+            default=datetime.now(),
+        )
+    )
+    updated_at: datetime = Field(
+        sa_column=Column(
+            pg.TIMESTAMP,
+            nullable=False,
+            default=datetime.now(),
+        )
+    )
+    
+    user: Optional[User] = Relationship(back_populates="study_sessions")
+    
+    def __repr__(self):
+        return f"<StudySession(user_uid={self.user_uid}, duration={self.studying_duration})>"
