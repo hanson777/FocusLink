@@ -152,6 +152,12 @@ export const api = {
     return request(`/users/search?${params}`);
   },
 
+  // Get user by UID
+  getUser: (userUid) => request(`/users/${userUid}`),
+
+  // Study sessions
+  getStudySessions: () => request("/study-sessions/"),
+
   // ---- USER STATUS ----
   updateGoals: (payload) =>
     request("/goals/daily", {
