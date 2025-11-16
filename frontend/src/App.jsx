@@ -1,13 +1,10 @@
-import { useState } from "react";
 import TimerCard from "./components/Timer/TimerCard";
 import TodayStatsCard from "./components/Stats/TodayStatsCard";
 import WeeklyStatsCard from "./components/Stats/WeeklyStatsCard";
 import FriendsCard from "./components/FriendsFeed/FriendsCard";
 import UserProfileCard from "./components/UserProfile/UserProfileCard";
 import Navbar from "./components/Navbar/Navbar";
-import ProfilePage from "./pages/Profile";
 import DailyGoalCard from "./components/Goals/DailyGoalCard";
-import QuickActionsCard from "./components/QuickActions/QuickActionsCard";
 
 export default function App() {
   const [page, setPage] = useState("home");
@@ -25,30 +22,26 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-bg text-text">
+      
+      <Navbar />
 
-      <Navbar onNavigate={(p) => setPage(p)} />
+      <main className="px-4 py-8 sm:px-6 lg:px-10 lg:py-12">
+        <div className="max-w-[1400px] mx-auto grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-10">
 
-      {page === "home" ? (
-        <main className="p-10">
-      <div className="max-w-[1400px] mx-auto">
+          <div className="flex flex-col gap-6 sm:gap-8">
+            <UserProfileCard />
+            <FriendsCard />
+          </div>
 
-      <div className="flex flex-wrap gap-10 justify-items-center">
-          
-        <UserProfileCard className="w-1/3" onClick={() => handleViewProfile(null)} />
-        <DailyGoalCard className="w-1/3" />
+          <div className="flex flex-col justify-center items-center min-h-full md:min-h-0 mt-6 md:mt-0">
+            <TimerCard timeLeft="25:00" active={false} />
+          </div>
 
-        <TimerCard 
-        timeLeft="25:00" 
-        active={false} 
-        onStart={() => console.log("start")}
-        onEnd={() => console.log("end")}
-        />
-        <TodayStatsCard />
-        <WeeklyStatsCard />
-
-        <FriendsCard onFriendClick={(friendUsername) => handleViewProfile(friendUsername)} />
-
-        </div>
+          <div className="flex flex-col gap-6 sm:gap-8">
+            <WeeklyStatsCard />
+            <TodayStatsCard />
+            <DailyGoalCard />
+          </div>
 
       </div>
         </main>
