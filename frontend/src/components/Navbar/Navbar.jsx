@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function Navbar({ onNavigate }) {
+export default function Navbar({ onNavigate, onLogout }) {
   return (
     <nav className="w-full bg-surface/70 backdrop-blur-md border-b border-surfaceLight px-6 py-4 flex justify-between items-center">
       <button
@@ -24,7 +24,12 @@ export default function Navbar({ onNavigate }) {
         >
           Settings
         </button>
-        <button className="text-danger hover:text-danger/80 transition">Logout</button>
+        <button 
+          className="text-danger hover:text-danger/80 transition"
+          onClick={() => onLogout && onLogout()}
+        >
+          Logout
+        </button>
       </div>
     </nav>
   );
