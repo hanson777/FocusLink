@@ -6,3 +6,19 @@ body {
   @apply bg-bg text-text min-h-screen;
   font-family: ui-sans-serif, system-ui;
 }
+
+.card {
+  @apply bg-surface rounded-xl p-6 border border-surfaceLight shadow-lg;
+}
+
+.section-title {
+  @apply text-xl font-semibold text-textLight mb-2;
+}
+
+.btn-primary {
+  @apply bg-primary hover:bg-primaryLight text-white px-4 py-2 rounded-lg transition shadow-glow;
+}
+
+.btn-accent {
+  @apply bg-accent hover:bg-accentLight text-bg px-4 py-2 rounded-lg transition shadow-glow;
+}
