@@ -6,7 +6,9 @@ export default function UserProfileCard({
     totalMinutes: 2100,
     longestStreak: 6,
     averageSession: 38,
-  }
+  },
+  onClick,
+  className,
 }) {
   const statusColor =
     status === "Focusing"
@@ -16,7 +18,12 @@ export default function UserProfileCard({
       : "bg-danger";
 
   return (
-    <div className="card">
+    <div
+      className={`card ${onClick ? "cursor-pointer hover:shadow-lg transition" : ""} ${className ?? ""}`}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+    >
       <h2 className="section-title">Profile</h2>
 
       <div className="flex items-center gap-4 mt-4">
