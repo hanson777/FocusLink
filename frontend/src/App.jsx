@@ -18,20 +18,19 @@ export default function App() {
 
       <div className="flex flex-wrap gap-10 justify-items-center">
           
-        <UserProfileCard className="w-1/3" />
-        <DailyGoalCard className="w-1/3" />
+        <UserProfileCard />
+        <DailyGoalCard />
 
         <TimerCard 
         timeLeft="25:00" 
         active={false} 
         onStart={() => console.log("start")}
         onEnd={() => console.log("end")}
-        className="w-1/3"
         />
-        <TodayStatsCard className="w-1/3" />
-        <WeeklyStatsCard className="w-1/3" />
+        <TodayStatsCard />
+        <WeeklyStatsCard />
 
-        <FriendsCard className="w-1/3" />
+        <FriendsCard />
 
         </div>
 
