@@ -12,7 +12,7 @@ class User(SQLModel, table=True):
         sa_column=Column(
             pg.UUID,
             nullable=False,
-            primary_key=True, \
+            primary_key=True,
             default=uuid.uuid4,
         )
     )
@@ -40,8 +40,14 @@ class User(SQLModel, table=True):
     studies: Optional[List["StudySession"]] = Relationship(back_populates="user")
     tasks: Optional[List["Task"]] = Relationship(back_populates="user")
     user_status: Optional[List["UserStatus"]] = Relationship(back_populates="user")
-    friend_reqs: Optional[List["Friend"]] = Relationship(back_populates="friend_req")
-    friends: Optional[List["Friend"]] = Relationship(back_populates="user")
+    friends: Optional[List["Friend"]] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={"foreign_keys": "Friend.user_uid"}
+    )
+    added_by: Optional[List["Friend"]] = Relationship(
+        back_populates="friend",
+        sa_relationship_kwargs={"foreign_keys": "Friend.friend_uid"}
+    )
     blocked_websites: Optional[List["BlockedWebsites"]] = Relationship(back_populates="user")
 
     def __repr__(self):
@@ -164,9 +170,15 @@ class Friend(SQLModel, table=True):
     )
 
     user_uid: Optional[uuid.UUID] = Field(foreign_key="users.uid")
-    user: Optional[User] = Relationship(back_populates="friends")
-    friend_req_uid: Optional[uuid.UUID] = Field(foreign_key="users.uid")
-    friend_req: Optional[User] = Relationship(back_populates="friend_reqs")
+    user: Optional[User] = Relationship(
+        back_populates="friends",
+        sa_relationship_kwargs={"foreign_keys": "[Friend.user_uid]"}
+    )
+    friend_uid: Optional[uuid.UUID] = Field(foreign_key="users.uid")
+    friend: Optional[User] = Relationship(
+        back_populates="added_by",
+        sa_relationship_kwargs={"foreign_keys": "[Friend.friend_uid]"}
+    )
     created_at: datetime = Field(
         sa_column=Column(
             pg.TIMESTAMP,
@@ -183,7 +195,7 @@ class Friend(SQLModel, table=True):
     )
 
     def __repr__(self):
-        return f"<Friend(user_uid={self.user_uid}, friend_req_uid={self.friend_req_uid})>"
+        return f"<Friend(user_uid={self.user_uid}, friend_uid={self.friend_uid})>"
 
 
 class BlockedWebsites(SQLModel, table=True):
