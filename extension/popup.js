@@ -4,6 +4,7 @@
 const RULE_ID_INSTAGRAM = 1;
 const RULE_ID_YOUTUBE = 2;
 const RULE_ID_NETFLIX = 3;
+const API_BASE = "https://undelved-censorable-ethan.ngrok-free.dev/"; // your FastAPI backend
 
 async function enableBlocking() {
   try {
@@ -90,13 +91,13 @@ function renderInlineLoginScreen() {
       statusEl.textContent = "Logging in...";
   
       try {
-        const res = await fetch("http://127.0.0.1:8000/auth/login", {
+        const res = await fetch(`${API_BASE}/auth/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Accept": "application/json"
           },
-          body: JSON.stringify({ username, password })
+          body: JSON.stringify({ username, password })  // UserLoginModel
         });
   
         if (!res.ok) {
@@ -113,7 +114,8 @@ function renderInlineLoginScreen() {
   
         await chrome.storage.sync.set({
           authToken: data.access_token,
-          username: data.user.username
+          username: data.user.username,
+          userUid: data.user.uid
         });
   
         statusEl.textContent = "Login successful!";
@@ -136,11 +138,21 @@ function renderRegisterScreen() {
     <p style="font-size:12px;">
       Create a new Focus account.
     </p>
-    <label style="font-size:12px;">Email</label>
-    <input id="email" type="email" placeholder="you@example.com" />
+
+    <label style="font-size:12px;">Username</label>
+    <input id="regUsername" type="text" placeholder="yourusername" />
+
+    <label style="font-size:12px; margin-top:6px; display:block;">Email</label>
+    <input id="regEmail" type="email" placeholder="you@example.com" />
+
+    <label style="font-size:12px; margin-top:6px; display:block;">First name</label>
+    <input id="regFirstName" type="text" placeholder="Annie" />
+
+    <label style="font-size:12px; margin-top:6px; display:block;">Last name</label>
+    <input id="regLastName" type="text" placeholder="Zhang" />
 
     <label style="font-size:12px; margin-top:6px; display:block;">Password</label>
-    <input id="password" type="password" placeholder="••••••••" />
+    <input id="regPassword" type="password" placeholder="••••••••" />
 
     <button id="registerBtn">Sign up</button>
     <button id="backBtn" style="margin-top:6px;">Back</button>
@@ -152,41 +164,50 @@ function renderRegisterScreen() {
   const backBtn = document.getElementById("backBtn");
 
   registerBtn.addEventListener("click", async () => {
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
+    const username  = document.getElementById("regUsername").value.trim();
+    const email     = document.getElementById("regEmail").value.trim();
+    const firstName = document.getElementById("regFirstName").value.trim();
+    const lastName  = document.getElementById("regLastName").value.trim();
+    const password  = document.getElementById("regPassword").value.trim();
 
-    if (!email || !password) {
-      statusEl.textContent = "Please enter email and password.";
+    if (!username || !email || !firstName || !lastName || !password) {
+      statusEl.textContent = "Please fill in all fields.";
       return;
     }
 
     statusEl.textContent = "Creating your account...";
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/register", {
+      const res = await fetch(`${API_BASE}/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json"
         },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+          first_name: firstName,
+          last_name: lastName
+        })
       });
 
+      const body = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        if (res.status === 400) {
-          statusEl.textContent = "This email is already registered.";
+        if (res.status === 400 && body.detail) {
+          // e.g. "Username already registered" / "Email already registered"
+          statusEl.textContent = body.detail;
         } else {
           statusEl.textContent = "Server error. Please try again.";
         }
         return;
       }
 
-      const data = await res.json(); // { token: "token-for-<email>" }
-
-      await chrome.storage.sync.set({ authToken: data.token });
-
-      statusEl.textContent = "Account created! You're logged in 🎉";
-      setTimeout(renderSessionScreen, 400);
+      // Backend returns a UserModel, no token.
+      statusEl.textContent = "Account created! Please log in.";
+      setTimeout(renderInlineLoginScreen, 600);
     } catch (err) {
       console.error("Register/network error:", err);
       statusEl.textContent = "Network error. Please try again.";
@@ -238,35 +259,46 @@ function renderConnectScreen() {
 
 // ---------- SESSION SCREEN ----------
 function renderSessionScreen() {
-  document.getElementById("popup").innerHTML = `
-    <h3>Focus App</h3>
-    <button id="startBtn">Start Session</button>
-    <button id="endBtn">End Session</button>
-    <button id="logoutBtn" style="margin-top: 10px;">Log out</button>
-    <p id="sessionStatus"></p>
-  `;
-
-  const statusEl = document.getElementById("sessionStatus");
-
-  document.getElementById("startBtn").addEventListener("click", async () => {
-    await chrome.storage.sync.set({ sessionActive: true });
-    await enableBlocking();
-    statusEl.textContent =
-      "Focus mode ON. Instagram, YouTube & Netflix have been yeeted 🚫";
-  });
-
-  document.getElementById("endBtn").addEventListener("click", async () => {
-    await chrome.storage.sync.set({ sessionActive: false });
-    await disableBlocking();
-    statusEl.textContent = "Session ended. The fun apps are free again 🎉";
-  });
-
-  document.getElementById("logoutBtn").addEventListener("click", async () => {
-    await chrome.storage.sync.remove("authToken");
-    await disableBlocking();
-    renderConnectScreen();
-  });
-}
+    document.getElementById("popup").innerHTML = `
+      <h3>Focus App</h3>
+      <p id="userInfo" style="font-size:12px; margin-bottom:8px;"></p>
+      <button id="startBtn">Start Session</button>
+      <button id="endBtn">End Session</button>
+      <button id="logoutBtn" style="margin-top: 10px;">Log out</button>
+      <p id="sessionStatus"></p>
+    `;
+  
+    const statusEl = document.getElementById("sessionStatus");
+    const userInfoEl = document.getElementById("userInfo");
+  
+    // Load username from chrome.storage synced at login
+    chrome.storage.sync.get(["username"], (res) => {
+      if (res.username) {
+        userInfoEl.textContent = `Logged in as ${res.username}`;
+      } else {
+        userInfoEl.textContent = "";
+      }
+    });
+  
+    document.getElementById("startBtn").addEventListener("click", async () => {
+      await chrome.storage.sync.set({ sessionActive: true });
+      await enableBlocking();
+      statusEl.textContent =
+        "Focus mode ON. Instagram, YouTube & Netflix have been yeeted 🚫";
+    });
+  
+    document.getElementById("endBtn").addEventListener("click", async () => {
+      await chrome.storage.sync.set({ sessionActive: false });
+      await disableBlocking();
+      statusEl.textContent = "Session ended. The fun apps are free again 🎉";
+    });
+  
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await chrome.storage.sync.remove(["authToken", "username", "userUid"]);
+      await disableBlocking();
+      renderConnectScreen();
+    });
+  }  
 
 // ---------- INIT ----------
 async function init() {
@@ -282,4 +314,5 @@ async function init() {
 }
 
 init();
+
 
