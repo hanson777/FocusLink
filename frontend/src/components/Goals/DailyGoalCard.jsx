@@ -21,9 +21,19 @@ export default function DailyGoalCard() {
     loadGoals();
     loadTodayStats();
     
+    // Listen for study session creation events to refresh immediately
+    const handleStudySessionCreated = () => {
+      loadTodayStats();
+    };
+    window.addEventListener('studySessionCreated', handleStudySessionCreated);
+    
     // Refresh stats every 30 seconds to update in real-time
     const interval = setInterval(loadTodayStats, 30000);
-    return () => clearInterval(interval);
+    
+    return () => {
+      window.removeEventListener('studySessionCreated', handleStudySessionCreated);
+      clearInterval(interval);
+    };
   }, []);
 
   async function loadGoals() {
