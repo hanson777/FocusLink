@@ -32,8 +32,8 @@ export default function App() {
           <div className="max-w-[1400px] mx-auto grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-10">
 
           <div className="flex flex-col gap-6 sm:gap-8 min-h-full">
-            <UserProfileCard />
-            <FriendsCard />
+            <UserProfileCard onClick={() => handleViewProfile(null)} />
+            <FriendsCard onFriendClick={(friendUsername) => handleViewProfile(friendUsername)} />
           </div>
 
           <div className="flex flex-col justify-center items-center min-h-full mt-6 md:mt-0">
