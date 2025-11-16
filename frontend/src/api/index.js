@@ -1,10 +1,9 @@
-const API_BASE_URL =
-  import.meta?.env?.VITE_API_URL?.replace(/\/$/, "") ||
-  "https://undelved-censorable-ethan.ngrok-free.dev";
-
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
 const defaultHeaders = {
   "Content-Type": "application/json",
 };
+
+console.log("API_BASE_URL =", API_BASE_URL);
 
 // Storage keys
 const STORAGE_KEYS = {

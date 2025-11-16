@@ -80,7 +80,6 @@ def login(req: LoginRequest):
 def get_user_status():
     return {"status": CURRENT_STATUS}
 
-
 @app.put("/api/user-status")
 def update_user_status(payload: UserStatusPayload):
     global CURRENT_STATUS

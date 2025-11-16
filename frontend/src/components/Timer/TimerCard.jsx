@@ -44,6 +44,10 @@ export default function FocusTimer() {
     }
   }
 
+  useEffect(() => {
+    updateStatus("Idle");
+  }, []);
+
   // Format time as MM:SS
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
