@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { apiPut } from '../../api';
+import api from '../../api';
 
 const TIMER_MODES = {
   POMODORO: {
@@ -38,7 +38,7 @@ export default function FocusTimer() {
   // Helper to send status to backend
   async function updateStatus(status) {
     try {
-      await apiPut("/api/user-status", { status });
+      await api.updateUserStatus({ status });
     } catch (err) {
       console.error("Status update failed:", err);
     }

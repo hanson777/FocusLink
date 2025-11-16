@@ -44,6 +44,24 @@ export function clearAuthData() {
   localStorage.removeItem(STORAGE_KEYS.USER);
 }
 
+export function apiGet(path) {
+  return request(path);
+}
+
+export function apiPost(path, body) {
+  return request(path, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function apiPut(path, body) {
+  return request(path, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
 async function request(path, options = {}) {
   const token = getAuthToken();
   const headers = {
@@ -114,6 +132,11 @@ export const api = {
   updateTimerSession: (sessionId, payload) =>
     request(`/timer/${sessionId}`, {
       method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
+  updateUserStatus: (payload) =>
+    request("/api/user-status", {
+      method: "PUT",
       body: JSON.stringify(payload),
     }),
 };
