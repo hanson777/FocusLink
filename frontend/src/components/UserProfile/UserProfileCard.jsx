@@ -4,9 +4,9 @@ import { apiGet } from "../../api";
 export default function UserProfileCard({
   username = "John",
   lifetimeStats = {
-    totalSessions: 42,
-    totalMinutes: 2100,
-    longestStreak: 6,
+    totalSessions: 3,
+    totalMinutes: 142,
+    longestStreak: 2,
     averageSession: 38,
   },
   onClick,

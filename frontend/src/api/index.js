@@ -114,9 +114,21 @@ export const api = {
   getTodayStats: () => request("/stats/today"),
   getWeeklyStats: () => request("/stats/weekly"),
   getFriends: () => request("/friends"),
-  addFriend: (payload) =>
+    addFriend: (payload) =>
     request("/friends", {
-      method: "POST",
+        method: "POST",
+        body: JSON.stringify(payload),
+    }),
+
+  removeFriend: (friend_uid) =>
+    request(`/friends/${friend_uid}`, {
+      method: "DELETE",
+    }),
+
+  // ---- USER STATUS ----
+  updateUserStatus: (payload) =>
+    request("/api/user-status", {
+      method: "PUT",
       body: JSON.stringify(payload),
     }),
   updateGoals: (payload) =>
@@ -138,6 +150,11 @@ export const api = {
     request("/api/user-status", {
       method: "PUT",
       body: JSON.stringify(payload),
+    }),
+    addDailyProgress: (payload) =>
+    request("/daily-goals/add", {
+        method: "POST",
+        body: JSON.stringify(payload),
     }),
 };
 

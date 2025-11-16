@@ -3,6 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from uuid import uuid4
 from datetime import datetime, timezone
+from dotenv import load_dotenv
+from fastapi import Depends
+from sqlalchemy.orm import Session
+from database import get_db
+import psycopg2.extras
+
+load_dotenv()
 
 app = FastAPI()
 
@@ -130,3 +137,140 @@ def update_daily_goal(uid: str, payload: DailyGoalPayload):
             return goal
 
     raise HTTPException(status_code=404, detail="Goal not found")
+
+STUDY_SESSIONS = []
+
+
+class StudySessionCreate(BaseModel):
+    start_time: str
+    end_time: str
+    studying_duration: int
+
+
+class StudySessionUpdate(BaseModel):
+    end_time: str
+    studying_duration: int
+
+
+@app.get("/study-sessions/")
+def get_study_sessions():
+    return STUDY_SESSIONS
+
+
+@app.post("/study-sessions/", status_code=201)
+def create_study_session(payload: StudySessionCreate):
+    session = {
+        "uid": str(uuid4()),
+        "user_uid": "demo-user",  # TODO: replace w/ auth user later
+        "start_time": payload.start_time,
+        "end_time": payload.end_time,
+        "studying_duration": payload.studying_duration,
+        "created_at": datetime.utcnow().isoformat() + "Z",
+        "updated_at": datetime.utcnow().isoformat() + "Z",
+    }
+    STUDY_SESSIONS.append(session)
+    return session
+
+
+@app.get("/study-sessions/{session_id}")
+def get_session(session_id: str):
+    for s in STUDY_SESSIONS:
+        if s["uid"] == session_id:
+            return s
+    raise HTTPException(status_code=404, detail="Session not found")
+
+
+@app.put("/study-sessions/{session_id}")
+def update_session(session_id: str, payload: StudySessionUpdate):
+    for s in STUDY_SESSIONS:
+        if s["uid"] == session_id:
+            s["end_time"] = payload.end_time
+            s["studying_duration"] = payload.studying_duration
+            s["updated_at"] = datetime.utcnow().isoformat() + "Z"
+            return s
+    raise HTTPException(status_code=404, detail="Session not found")
+
+@app.post("/daily-goals/add")
+def add_daily_minutes(payload: dict):
+    amount = payload.get("minutes", 0)
+    sessions = payload.get("sessions", 0)
+
+    # assuming only one goal for now
+    if len(DAILY_GOALS) == 0:
+        raise HTTPException(400, "No daily goals found")
+
+    goal = DAILY_GOALS[0]
+    goal["minutes_goal"] += amount
+    goal["session_goal"] += sessions
+    goal["updated_at"] = datetime.utcnow().isoformat() + "Z"
+    
+    return goal
+
+# ============================
+# FRIENDS ENDPOINTS (SQLAlchemy)
+# ============================
+
+from fastapi import Depends
+from sqlalchemy.orm import Session
+from database import get_db, Friend
+from pydantic import BaseModel
+from datetime import datetime, timezone
+
+CURRENT_USER_UID = "demo-user"
+
+
+class FriendPayload(BaseModel):
+    friend_uid: str
+    friend_username: str
+
+
+@app.get("/friends")
+def get_friends(db: Session = Depends(get_db)):
+    """Return all friends for the current user."""
+    rows = (
+        db.query(Friend)
+        .filter(Friend.user_uid == CURRENT_USER_UID)
+        .order_by(Friend.created_at.desc())
+        .all()
+    )
+    return rows
+
+
+@app.post("/friends")
+def add_friend(payload: FriendPayload, db: Session = Depends(get_db)):
+    """Add a new friend to the DB."""
+
+    new_friend = Friend(
+        user_uid=CURRENT_USER_UID,
+        friend_uid=payload.friend_uid,
+        friend_username=payload.friend_username,
+        created_at=datetime.now(timezone.utc),
+    )
+
+    db.add(new_friend)
+    db.commit()
+    db.refresh(new_friend)
+
+    return new_friend
+
+
+@app.delete("/friends/{friend_uid}")
+def remove_friend(friend_uid: str, db: Session = Depends(get_db)):
+    """Remove a friend based on friend_uid."""
+
+    row = (
+        db.query(Friend)
+        .filter(
+            Friend.user_uid == CURRENT_USER_UID,
+            Friend.friend_uid == friend_uid,
+        )
+        .first()
+    )
+
+    if not row:
+        raise HTTPException(404, "Friend not found")
+
+    db.delete(row)
+    db.commit()
+
+    return {"detail": "Friend removed"}
