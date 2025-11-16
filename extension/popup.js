@@ -1,5 +1,54 @@
 const API_BASE = "https://undelved-censorable-ethan.ngrok-free.dev";
 
+
+// ---------- BLOCKING HELPERS ----------
+// Rule IDs for each site – must be unique integers
+const RULE_ID_INSTAGRAM = 1;
+const RULE_ID_YOUTUBE = 2;
+const RULE_ID_NETFLIX = 3;
+
+async function enableBlocking() {
+  // Remove old rules first (just in case)
+  await chrome.declarativeNetRequest.updateDynamicRules({
+    removeRuleIds: [RULE_ID_INSTAGRAM, RULE_ID_YOUTUBE, RULE_ID_NETFLIX],
+    addRules: [
+      {
+        id: RULE_ID_INSTAGRAM,
+        priority: 1,
+        action: { type: "block" },
+        condition: {
+          urlFilter: "instagram.com",
+          resourceTypes: ["main_frame"]
+        }
+      },
+      {
+        id: RULE_ID_YOUTUBE,
+        priority: 1,
+        action: { type: "block" },
+        condition: {
+          urlFilter: "youtube.com",
+          resourceTypes: ["main_frame"]
+        }
+      },
+      {
+        id: RULE_ID_NETFLIX,
+        priority: 1,
+        action: { type: "block" },
+        condition: {
+          urlFilter: "netflix.com",
+          resourceTypes: ["main_frame"]
+        }
+      }
+    ]
+  });
+}
+
+async function disableBlocking() {
+  await chrome.declarativeNetRequest.updateDynamicRules({
+    removeRuleIds: [RULE_ID_INSTAGRAM, RULE_ID_YOUTUBE, RULE_ID_NETFLIX],
+    addRules: []
+  });
+}
 // ---------- HELPER: START TIMER SESSION VIA BACKEND ----------
 function startTimerSession(payload) {
     return new Promise((resolve, reject) => {
@@ -271,18 +320,25 @@ function startTimerSession(payload) {
     });
   
     document.getElementById("startBtn").addEventListener("click", async () => {
-      statusEl.textContent = "Starting focus session...";
-      try {
-        // Example payload – adjust fields to match your backend
-        await startTimerSession({ duration_minutes: 25 });
-        await chrome.storage.sync.set({ sessionActive: true });
-        await enableBlocking();
-        statusEl.textContent =
-          "Focus mode ON. Instagram, YouTube & Netflix have been yeeted 🚫";
-      } catch (err) {
-        statusEl.textContent = "Failed to start session. Please try again.";
-      }
+        try {
+          statusEl.textContent = "Starting focus session...";
+      
+          console.log("[FocusApp] Setting sessionActive = true");
+          await chrome.storage.sync.set({ sessionActive: true });
+      
+          console.log("[FocusApp] Calling enableBlocking()");
+          await enableBlocking();
+          console.log("[FocusApp] enableBlocking() finished");
+      
+          statusEl.textContent =
+            "Focus mode ON. Instagram, YouTube & Netflix have been yeeted 🚫";
+        } catch (err) {
+          console.error("Failed to enable blocking:", err);
+          statusEl.textContent =
+            "Failed to start session: " + (err && err.message ? err.message : String(err));
+        }
     });
+          
   
     document.getElementById("endBtn").addEventListener("click", async () => {
       await chrome.storage.sync.set({ sessionActive: false });
