@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from src.db.main import init_db
+from backend.db.main import init_db
 from fastapi import FastAPI
 
 
@@ -11,5 +11,7 @@ async def lifespan():
     print("Stopping app")
 
 app = FastAPI()
+
+
 
 
