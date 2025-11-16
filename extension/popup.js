@@ -302,6 +302,8 @@ function renderSessionScreen() {
           <h3>Focus App</h3>
           <p id="userInfo" style="font-size:12px; margin-bottom:8px;"></p>
   
+          <button id="dashboardBtn">Open Dashboard</button>
+  
           <button id="startBtn">Start Session</button>
           <button id="endBtn">End Session</button>
   
@@ -315,27 +317,42 @@ function renderSessionScreen() {
   
     const startBtn = document.getElementById("startBtn");
     const endBtn = document.getElementById("endBtn");
+    const dashboardBtn = document.getElementById("dashboardBtn");
   
-    // 🎨 pretty button color presets
+    // 🎨 STYLE: Dashboard button (soft blue gradient)
+    dashboardBtn.style.background = "linear-gradient(135deg, #93c5fd, #60a5fa)";
+    dashboardBtn.style.boxShadow = "0 4px 12px rgba(147,197,253,0.5)";
+    dashboardBtn.style.color = "#fff";
+    dashboardBtn.style.marginBottom = "10px";
+    dashboardBtn.style.borderRadius = "999px";
+    dashboardBtn.style.padding = "8px";
+    dashboardBtn.style.fontSize = "13px";
+    dashboardBtn.style.fontWeight = "500";
+    dashboardBtn.style.cursor = "pointer";
+  
+    // 👉 When clicked, open the live site in a new tab
+    dashboardBtn.addEventListener("click", () => {
+      chrome.tabs.create({
+        url: "https://student-focus-app-1.onrender.com/"
+      });
+    });
+  
+    // 🎨 color presets for Start/End buttons
     function applyDefaultColors() {
-      // Start Session default → soft green
       startBtn.style.background = "linear-gradient(135deg, #22c55e, #16a34a)";
       startBtn.style.boxShadow = "0 4px 10px rgba(34,197,94,0.4)";
       startBtn.style.color = "#fff";
   
-      // End Session default → soft amber/yellow
       endBtn.style.background = "linear-gradient(135deg, #fbbf24, #f59e0b)";
       endBtn.style.boxShadow = "0 4px 10px rgba(251,191,36,0.4)";
       endBtn.style.color = "#fff";
     }
   
     function applySessionActiveColors() {
-      // Start btn when session is active → light red
       startBtn.style.background = "linear-gradient(135deg, #f87171, #ef4444)";
       startBtn.style.boxShadow = "0 4px 10px rgba(239,68,68,0.4)";
       startBtn.style.color = "#fff";
   
-      // End btn when session active → soft blue
       endBtn.style.background = "linear-gradient(135deg, #60a5fa, #3b82f6)";
       endBtn.style.boxShadow = "0 4px 10px rgba(59,130,246,0.4)";
       endBtn.style.color = "#fff";
@@ -379,12 +396,15 @@ function renderSessionScreen() {
     });
   
     document.getElementById("logoutBtn").addEventListener("click", () => {
-      chrome.storage.sync.remove(["authToken", "username", "userUid", "sessionActive"], () => {
-        disableBlocking();
-        renderConnectScreen();
-      });
+      chrome.storage.sync.remove(
+        ["authToken", "username", "userUid", "sessionActive"],
+        () => {
+          disableBlocking();
+          renderConnectScreen();
+        }
+      );
     });
-  }
+  }  
    
 // ---------- INIT ----------
 function init() {
