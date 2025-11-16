@@ -30,7 +30,7 @@
       "*://*.youtube.com/*",
       "*://*.netflix.com/*",
       "https://undelved-censorable-ethan.ngrok-free.dev/*",
-      "http://localhost:5173/*"
+      "https://student-focus-app-1.onrender.com/*"
     ],
   
     "background": {
