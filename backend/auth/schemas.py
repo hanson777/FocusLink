@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlmodel import Field
 import uuid
 from datetime import datetime
@@ -11,16 +11,16 @@ class UserCreateModel(BaseModel):
     last_name: str = Field(max_length=20)
 
 class UserModel(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     uid: uuid.UUID
     username: str
     email: str
     first_name: str
     last_name: str
-    password_hash: str = Field(exclude=True)
+    is_verified: bool
     created_at: datetime
     updated_at: datetime
-
-
 
 class UserLoginModel(BaseModel):
     username: str
