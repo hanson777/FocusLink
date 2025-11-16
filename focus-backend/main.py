@@ -46,3 +46,25 @@ def login(req: LoginRequest):
     # In a real app you’d return a JWT; here we just fake it
     token = f"token-for-{req.email}"
     return {"token": token}
+
+
+@app.post("/api/register", response_model=LoginResponse)
+def register(req: RegisterRequest):
+    """
+    Simple registration API:
+
+    Request: { "email": "...", "password": "..." }
+    - Fails if email already exists
+    - Saves user to users.json
+    - Returns a token so the client can auto-login
+    """
+    if req.email in USERS:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    # ⚠️ For real apps you should hash the password.
+    # For hackathon/demo, we store it in plain text.
+    USERS[req.email] = req.password
+    save_users(USERS)
+
+    token = f"token-for-{req.email}"
+    return {"token": token}
