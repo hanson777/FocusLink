@@ -1,9 +1,9 @@
-
-chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    // We expect messages from site-bridge.js like:
+    // { type: "focusapp-auth", token, username, uid }
     if (message.type === "focusapp-auth" && message.token) {
       console.log("Received auth token from website:", message.token);
   
-      // NEW: also store username and uid if provided
       const toStore = {
         authToken: message.token,
       };
@@ -25,10 +25,13 @@ chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => 
         }
       });
   
-      return true; // keep channel open
+      // Return true to indicate we’ll respond asynchronously
+      return true;
     }
   
+    // Any other message types fall through here
     sendResponse({ ok: false, error: "invalid_message" });
   });
+  
   
   

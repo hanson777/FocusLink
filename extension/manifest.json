@@ -1,31 +1,55 @@
 {
     "manifest_version": 3,
     "name": "Focus App",
-    "version": "1.0",
-    "action": {
-      "default_popup": "popup.html"
+    "version": "1.0.0",
+  
+    "description": "Stay focused by starting study sessions that block distracting sites like Instagram, synced with your Focus App account.",
+  
+    "icons": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
     },
+  
+    "action": {
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "icons/icon16.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
+      }
+    },
+  
     "permissions": [
       "storage",
       "declarativeNetRequest"
     ],
+  
     "host_permissions": [
       "*://*.instagram.com/*",
       "*://*.youtube.com/*",
       "*://*.netflix.com/*",
-      "https://undelved-censorable-ethan.ngrok-free.dev/*"   
+      "https://undelved-censorable-ethan.ngrok-free.dev/*",
+      "https://student-focus-app-1.onrender.com/*"
     ],
-    "background": {
-      "service_worker": "background.js"
-    },
-    "declarative_net_request": {
-      "rule_resources": []
-    },
-    "externally_connectable": {
-      "matches": [
-        "https://student-focus-app-1.onrender.com/*"
-      ]
-    }
-  }
   
+    "background": {
+      "service_worker": "background.js",
+      "type": "module"
+    },
+  
+    "declarative_net_request": {
+        "rule_resources": []
+    },
+  
+    "content_scripts": [
+      {
+        "matches": [
+          "https://student-focus-app-1.onrender.com/*"
+        ],
+        "js": ["site-bridge.js"],
+        "run_at": "document_idle"
+      }
+    ]
+  }
   
