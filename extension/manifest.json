@@ -12,7 +12,8 @@
     "host_permissions": [
       "*://*.instagram.com/*",
       "*://*.youtube.com/*",
-      "*://*.netflix.com/*"
+      "*://*.netflix.com/*",
+      "http://127.0.0.1:8000/*"     
     ],
     "background": {
       "service_worker": "background.js"
@@ -22,7 +23,7 @@
     },
     "externally_connectable": {
       "matches": [
-        "https://about.canvas.ubc.ca/"
+        "https://student-focus-app-1.onrender.com/*"
       ]
     }
   }

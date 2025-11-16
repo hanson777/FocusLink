@@ -57,48 +57,72 @@ async function disableBlocking() {
 
 // ---------- INLINE LOGIN SCREEN (INSIDE EXTENSION) ----------
 function renderInlineLoginScreen() {
-  document.getElementById("popup").innerHTML = `
-    <h3>Focus App</h3>
-    <p style="font-size:12px;">
-      Dev login inside the extension (no real backend yet).
-    </p>
-    <label style="font-size:12px;">Email</label>
-    <input id="email" type="email" placeholder="you@example.com" />
-
-    <label style="font-size:12px; margin-top:6px; display:block;">Password</label>
-    <input id="password" type="password" placeholder="••••••••" />
-
-    <button id="loginBtn">Log in</button>
-    <button id="backBtn" style="margin-top:6px;">Back</button>
-    <p id="status" style="margin-top:8px; font-size:12px;"></p>
-  `;
-
-  const statusEl = document.getElementById("status");
-  const loginBtn = document.getElementById("loginBtn");
-  const backBtn = document.getElementById("backBtn");
-
-  loginBtn.addEventListener("click", async () => {
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
-
-    if (!email || !password) {
-      statusEl.textContent = "Please enter email and password.";
-      return;
-    }
-
-    // 🔒 FAKE CHECK (for now everything passes)
-    // Later you can replace this with a real fetch() call.
-    const fakeToken = "dev-token-for-" + email;
-
-    await chrome.storage.sync.set({ authToken: fakeToken });
-    statusEl.textContent = "Login successful!";
-    setTimeout(renderSessionScreen, 400);
-  });
-
-  backBtn.addEventListener("click", () => {
-    renderConnectScreen();
-  });
-}
+    document.getElementById("popup").innerHTML = `
+      <h3>Focus App</h3>
+      <p style="font-size:12px;">
+        Log in to your Focus account.
+      </p>
+      <label style="font-size:12px;">Email</label>
+      <input id="email" type="email" placeholder="you@example.com" />
+  
+      <label style="font-size:12px; margin-top:6px; display:block;">Password</label>
+      <input id="password" type="password" placeholder="••••••••" />
+  
+      <button id="loginBtn">Log in</button>
+      <button id="backBtn" style="margin-top:6px;">Back</button>
+      <p id="status" style="margin-top:8px; font-size:12px;"></p>
+    `;
+  
+    const statusEl = document.getElementById("status");
+    const loginBtn = document.getElementById("loginBtn");
+    const backBtn = document.getElementById("backBtn");
+  
+    loginBtn.addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+  
+      if (!email || !password) {
+        statusEl.textContent = "Please enter email and password.";
+        return;
+      }
+  
+      statusEl.textContent = "Logging in...";
+  
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({ email, password })
+        });
+  
+        if (!res.ok) {
+          if (res.status === 401) {
+            statusEl.textContent = "Incorrect email or password.";
+          } else {
+            statusEl.textContent = "Server error. Please try again.";
+          }
+          return;
+        }
+  
+        const data = await res.json();   // { token: "token-for-..." }
+  
+        await chrome.storage.sync.set({ authToken: data.token });
+  
+        statusEl.textContent = "Login successful!";
+        setTimeout(renderSessionScreen, 400);
+      } catch (err) {
+        console.error("Login/network error:", err);
+        statusEl.textContent = "Network error. Please try again.";
+      }
+    });
+  
+    backBtn.addEventListener("click", () => {
+      renderConnectScreen();
+    });
+  }
 
 // ---- CONNECT SCREEN (CHOOSE LOGIN METHOD) ----
 function renderConnectScreen() {
@@ -125,7 +149,7 @@ function renderConnectScreen() {
   openLoginBtn.addEventListener("click", () => {
     chrome.tabs.create({
       // TODO: replace with your real site URL later
-      url: "https://about.canvas.ubc.ca/"
+      url: "https://student-focus-app-1.onrender.com/"
     });
     statusEl.textContent =
       "Login page opened. After logging in on the website, reopen this popup.";
