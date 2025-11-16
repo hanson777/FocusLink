@@ -36,22 +36,17 @@ class UserService:
         return users
 
     async def calculate_user_stats(self, uid: uuid.UUID, session: AsyncSession):
-        statement = select(func.count(StudySession.uid), func.sum(StudySession.studying_duration)).where(StudySession.user_uid == uid)
+        statement = select(func.count(StudySession.uid)).where(StudySession.user_uid == uid)
         result = await session.exec(statement)
         row = result.first()
-        total_sessions = row[0] if row[0] else 0
-        total_minutes = row[1] if row[1] else 0
-        if total_sessions > 0:
-            avg_minutes = total_minutes / total_sessions
-        else:
-            avg_minutes = 0
+        total_sessions = row if row else 0
         
         longest_streak = await self.calculate_streak(uid, session)
         
         return {
             "total_sessions": total_sessions,
-            "total_minutes": total_minutes,
-            "average_minutes": avg_minutes,
+            "total_minutes": 0,  # Removed studying_duration field
+            "average_minutes": 0,  # Removed studying_duration field
             "longest_streak": longest_streak
         }
 

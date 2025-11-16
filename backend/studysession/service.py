@@ -44,6 +44,11 @@ class StudySessionService:
             raise HTTPException(status_code=404, detail="session not found")
         
         return study_session
+
+    async def get_all_sessions_by_id(self, session_id: uuid.UUID, db: AsyncSession):
+        statement = select(StudySession).where(StudySession.uid == session_id)
+        result = await db.exec(statement)
+        study_session = result.all()
     
     async def update_study_session(self, session_id: uuid.UUID, session_data: StudySessionUpdateModel, user_uid: uuid.UUID, db: AsyncSession):
         study_session = await self.get_session_by_id(session_id, db)

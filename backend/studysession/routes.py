@@ -29,7 +29,9 @@ async def get_my_sessions(
 ):
     return await study_session_service.get_my_sessions(current_user.uid, 7, db)
 
-
+@studysession_router.get("/all", response_model=List[StudySessionModel])
+async def get_all_sessions(user_uid: uuid.UUID, db: AsyncSession = Depends(get_session)):
+    return await study_session_service.get_all_sessions_by_id(user_uid, db)
 @studysession_router.get("/{session_id}", response_model=StudySessionModel)
 async def get_session(
     session_id: uuid.UUID,
