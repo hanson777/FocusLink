@@ -81,6 +81,8 @@ class Task(SQLModel, table=True):
     updated_at: datetime = Field(
         sa_column=Column(
             pg.TIMESTAMP,
+            nullable=False,
+            default=datetime.now(),
         )
     )
 
