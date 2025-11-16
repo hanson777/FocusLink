@@ -13,18 +13,18 @@ export default function App() {
       <Navbar />
 
       <main className="px-4 py-8 sm:px-6 lg:px-10 lg:py-12">
-        <div className="max-w-[1400px] mx-auto grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-10">
+        <div className="max-w-[1400px] mx-auto grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-10 items-stretch">
 
-          <div className="flex flex-col gap-6 sm:gap-8">
+          <div className="flex flex-col gap-6 sm:gap-8 min-h-full">
             <UserProfileCard />
             <FriendsCard />
           </div>
 
-          <div className="flex flex-col justify-center items-center min-h-full md:min-h-0 mt-6 md:mt-0">
+          <div className="flex flex-col justify-center items-center min-h-full mt-6 md:mt-0">
             <TimerCard timeLeft="25:00" active={false} />
           </div>
 
-          <div className="flex flex-col gap-6 sm:gap-8">
+          <div className="flex flex-col gap-6 sm:gap-8 min-h-full">
             <WeeklyStatsCard />
             <TodayStatsCard />
             <DailyGoalCard />
