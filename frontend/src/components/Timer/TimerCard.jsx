@@ -67,6 +67,11 @@ export default function FocusTimer() {
           end_time: endTime,
         });
         console.log(`Study session created: ${durationSeconds} seconds`);
+        
+        // Dispatch custom event to notify other components to refresh
+        window.dispatchEvent(new CustomEvent('studySessionCreated', {
+          detail: { durationSeconds }
+        }));
       } catch (err) {
         console.error("Failed to create study session:", err);
       }

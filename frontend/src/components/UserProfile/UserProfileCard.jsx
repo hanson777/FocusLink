@@ -22,6 +22,22 @@ export default function UserProfileCard({
     loadUserData();
   }, [viewingUsername]);
 
+  // Separate effect for listening to study session creation events
+  useEffect(() => {
+    // Listen for study session creation events to refresh profile stats immediately
+    const handleStudySessionCreated = () => {
+      // Only refresh if viewing current user's profile (not a friend's)
+      if (!viewingUsername) {
+        loadUserData();
+      }
+    };
+    window.addEventListener('studySessionCreated', handleStudySessionCreated);
+    
+    return () => {
+      window.removeEventListener('studySessionCreated', handleStudySessionCreated);
+    };
+  }, [viewingUsername]);
+
   // Separate effect for status updates
   useEffect(() => {
     if (!viewingUsername) {
