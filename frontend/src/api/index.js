@@ -1,10 +1,10 @@
-const API_BASE_URL =
-  import.meta?.env?.VITE_API_URL?.replace(/\/$/, "") ||
-  "https://undelved-censorable-ethan.ngrok-free.dev";
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
 
 const defaultHeaders = {
   "Content-Type": "application/json",
 };
+
+console.log("API_BASE_URL =", API_BASE_URL);
 
 // Storage keys
 const STORAGE_KEYS = {
@@ -42,6 +42,24 @@ export function clearAuthData() {
   localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
   localStorage.removeItem(STORAGE_KEYS.TOKEN_TYPE);
   localStorage.removeItem(STORAGE_KEYS.USER);
+}
+
+export function apiGet(path) {
+  return request(path);
+}
+
+export function apiPost(path, body) {
+  return request(path, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function apiPut(path, body) {
+  return request(path, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
 }
 
 async function request(path, options = {}) {
@@ -114,6 +132,11 @@ export const api = {
   updateTimerSession: (sessionId, payload) =>
     request(`/timer/${sessionId}`, {
       method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
+  updateUserStatus: (payload) =>
+    request("/api/user-status", {
+      method: "PUT",
       body: JSON.stringify(payload),
     }),
 };
