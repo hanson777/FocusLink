@@ -7,6 +7,13 @@ body {
   font-family: ui-sans-serif, system-ui;
 }
 
+.btn {
+  @apply bg-primary/20 text-primary 
+         hover:bg-primary/30 
+         rounded-lg text-sm font-semibold 
+         transition shadow-glow;
+}
+
 .card {
   @apply bg-surface rounded-xl p-6 border border-surfaceLight shadow-lg;
 }

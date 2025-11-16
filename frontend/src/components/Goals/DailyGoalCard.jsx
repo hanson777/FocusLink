@@ -2,7 +2,8 @@ export default function DailyGoalCard({
   dailyMinutesGoal = 90,
   dailySessionsGoal = 3,
   minutesToday = 45,
-  sessionsToday = 1
+  sessionsToday = 1,
+  onEditGoals
 }) {
   const minutesPercent = Math.min((minutesToday / dailyMinutesGoal) * 100, 100);
   const sessionsPercent = Math.min((sessionsToday / dailySessionsGoal) * 100, 100);
@@ -40,6 +41,14 @@ export default function DailyGoalCard({
             ></div>
           </div>
         </div>
+
+        <button
+            onClick={onEditGoals}
+            className="btn btn-sm mt-4"
+        >
+            Edit Goals
+        </button>
+
 
       </div>
     </div>

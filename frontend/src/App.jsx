@@ -13,42 +13,31 @@ export default function App() {
 
       <Navbar />
 
-      <main className="p-10">
-        <div className="
-          grid gap-10 
-          grid-cols-1 
-          md:grid-cols-2 
-          xl:grid-cols-3 
-          2xl:grid-cols-5 
-          justify-items-center
-        ">
+    <main className="p-10">
+      <div className="max-w-[1400px] mx-auto">
 
-          <UserProfileCard />
+      <div className="flex flex-wrap gap-10 justify-items-center">
+          
+        <UserProfileCard className="w-1/3" />
+        <QuickActionsCard className="w-1/3" />
+        <DailyGoalCard className="w-1/3" />
 
-          <QuickActionsCard />
+        <TimerCard 
+        timeLeft="25:00" 
+        active={false} 
+        onStart={() => console.log("start")}
+        onEnd={() => console.log("end")}
+        className="w-1/3"
+        />
+        <TodayStatsCard className="w-1/3" />
+        <WeeklyStatsCard className="w-1/3" />
 
-          <DailyGoalCard
-            dailyMinutesGoal={90}
-            dailySessionsGoal={3}
-            minutesToday={42}
-            sessionsToday={1}
-          />
-
-          <TimerCard
-            timeLeft="25:00"
-            active={false}
-            onStart={() => console.log("Start")}
-            onEnd={() => console.log("End")}
-          />
-
-          <TodayStatsCard />
-
-          <WeeklyStatsCard />
-
-          <FriendsCard />
+        <FriendsCard className="w-1/3" />
 
         </div>
-      </main>
+
+      </div>
+    </main>
 
     </div>
   );
