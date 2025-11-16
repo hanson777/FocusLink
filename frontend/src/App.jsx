@@ -32,12 +32,11 @@ export default function App() {
         active={false} 
         onStart={() => console.log("start")}
         onEnd={() => console.log("end")}
-        className="w-1/3"
         />
-        <TodayStatsCard className="w-1/3" />
-        <WeeklyStatsCard className="w-1/3" />
+        <TodayStatsCard />
+        <WeeklyStatsCard />
 
-        <FriendsCard className="w-1/3" />
+        <FriendsCard />
 
         </div>
 
