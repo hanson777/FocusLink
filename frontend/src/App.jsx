@@ -11,6 +11,17 @@ import QuickActionsCard from "./components/QuickActions/QuickActionsCard";
 
 export default function App() {
   const [page, setPage] = useState("home");
+  const [viewingUsername, setViewingUsername] = useState(null);
+
+  const handleViewProfile = (username = null) => {
+    setViewingUsername(username);
+    setPage("profile");
+  };
+
+  const handleBack = () => {
+    setPage("home");
+    setViewingUsername(null);
+  };
 
   return (
     <div className="min-h-screen bg-bg text-text">
@@ -23,7 +34,7 @@ export default function App() {
 
       <div className="flex flex-wrap gap-10 justify-items-center">
           
-        <UserProfileCard className="w-1/3" onClick={() => setPage("profile")} />
+        <UserProfileCard className="w-1/3" onClick={() => handleViewProfile(null)} />
         <DailyGoalCard className="w-1/3" />
 
         <TimerCard 
@@ -35,14 +46,18 @@ export default function App() {
         <TodayStatsCard />
         <WeeklyStatsCard />
 
-        <FriendsCard />
+        <FriendsCard onFriendClick={(friendUsername) => handleViewProfile(friendUsername)} />
 
         </div>
 
       </div>
         </main>
       ) : page === "profile" ? (
-        <ProfilePage onBack={() => setPage("home")} onNavigate={(p) => setPage(p)} />
+        <ProfilePage 
+          viewingUsername={viewingUsername}
+          onBack={handleBack} 
+          onNavigate={(p) => setPage(p)} 
+        />
       ) : null}
 
     </div>

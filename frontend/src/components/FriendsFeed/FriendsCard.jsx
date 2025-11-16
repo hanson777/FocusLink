@@ -1,5 +1,6 @@
 export default function FriendsCard({ 
-  friends = ["John", "Jane", "Jack", "Amy"]
+  friends = ["John", "Jane", "Jack", "Amy"],
+  onFriendClick
 }) {
   return (
     <div className="card">
@@ -9,6 +10,7 @@ export default function FriendsCard({
         {friends.map((friend, i) => (
           <div 
             key={i}
+            onClick={() => onFriendClick && onFriendClick(friend)}
             className="
               bg-surfaceLight 
               text-textLight
