@@ -2,37 +2,186 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Focus App</title>
+    <title>🧑‍🎓Focus App👩‍🎓</title>
     <style>
-      body {
-        font-family: system-ui, sans-serif;
-        padding: 10px;
-        min-width: 230px;
+      :root {
+        --bg: #f5f7fb;
+        --card-bg: #ffffff;
+        --primary: #2563eb;
+        --primary-hover: #1d4ed8;
+        --danger: #dc2626;
+        --text-main: #111827;
+        --text-muted: #6b7280;
+        --border-subtle: #e5e7eb;
+        --radius-lg: 12px;
+        --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.12);
       }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 12px;
+        min-width: 260px;
+        max-width: 320px;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        background: radial-gradient(circle at top, #e0e7ff, #f9fafb 55%);
+        color: var(--text-main);
+      }
+
+      .card {
+        background: var(--card-bg);
+        border-radius: var(--radius-lg);
+        padding: 14px 16px 16px;
+        box-shadow: var(--shadow-soft);
+        border: 1px solid rgba(148, 163, 184, 0.3);
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 6px;
+      }
+
+      .card-title {
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+      }
+
+      .card-subtitle {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 10px;
+      }
+
+      .pill {
+        font-size: 10px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+        font-weight: 500;
+      }
+
+      label {
+        font-size: 11px;
+        color: var(--text-muted);
+        display: block;
+        margin-top: 8px;
+        margin-bottom: 2px;
+      }
+
+      input {
+        width: 100%;
+        padding: 7px 8px;
+        border-radius: 8px;
+        border: 1px solid var(--border-subtle);
+        font-size: 12px;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease,
+          background-color 0.15s ease;
+        background-color: #f9fafb;
+      }
+
+      input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.12);
+        background-color: #ffffff;
+      }
+
       button {
         width: 100%;
         padding: 8px;
-        margin-top: 8px;
+        margin-top: 10px;
+        border-radius: 999px;
+        border: none;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.15s ease, transform 0.05s ease,
+          box-shadow 0.15s ease;
       }
-      input {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 6px;
-        margin-top: 4px;
+
+      button:active {
+        transform: translateY(1px);
+        box-shadow: none;
       }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary), #4f46e5);
+        color: #ffffff;
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+      }
+
+      .btn-primary:hover {
+        background: linear-gradient(135deg, var(--primary-hover), #4338ca);
+      }
+
+      .btn-secondary {
+        background: #f3f4f6;
+        color: var(--text-main);
+        border: 1px solid var(--border-subtle);
+        box-shadow: 0 3px 8px rgba(15, 23, 42, 0.06);
+      }
+
+      .btn-secondary:hover {
+        background: #e5e7eb;
+      }
+
       #status,
       #sessionStatus {
-        margin-top: 6px;
-        font-size: 12px;
-        color: #555;
+        margin-top: 8px;
+        font-size: 11px;
+        color: var(--text-muted);
+        min-height: 14px;
+      }
+
+      .status-error {
+        color: var(--danger);
+      }
+
+      .status-success {
+        color: #16a34a;
+      }
+
+      #popup {
+        animation: fadeIn 0.18s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
     </style>
   </head>
   <body>
-    <div id="popup"></div>
+    <div id="popup">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Focus App</div>
+          <span class="pill">Extension</span>
+        </div>
+        <div class="card-subtitle">
+          Loading… If this screen stays here, please refresh the popup.
+        </div>
+      </div>
+    </div>
     <script src="popup.js"></script>
   </body>
 </html>
+
 
 
 
