@@ -17,26 +17,26 @@ study_session_service = StudySessionService()
 async def create_session(
     session_data: StudySessionCreateModel,
     current_user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_session)
+    db: AsyncSession = Depends(get_session)
 ):
-    return await study_session_service.create_study_session(session_data, current_user.uid, session)
+    return await study_session_service.create_study_session(session_data, current_user.uid, db)
 
 
 @studysession_router.get("/", response_model=List[StudySessionModel])
 async def get_my_sessions(
     current_user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_session)
+    db: AsyncSession = Depends(get_session)
 ):
-    return await study_session_service.get_my_sessions(current_user.uid, 7, session)
+    return await study_session_service.get_my_sessions(current_user.uid, 7, db)
 
 
 @studysession_router.get("/{session_id}", response_model=StudySessionModel)
 async def get_session(
     session_id: uuid.UUID,
     current_user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_session)
+    db: AsyncSession = Depends(get_session)
 ):
-    return await study_session_service.get_session_by_id(session_id, session)
+    return await study_session_service.get_session_by_id(session_id, db)
 
 
 @studysession_router.put("/{session_id}", response_model=StudySessionModel)
@@ -44,7 +44,7 @@ async def update_session(
     session_id: uuid.UUID,
     session_data: StudySessionUpdateModel,
     current_user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_session)
+    db: AsyncSession = Depends(get_session)
 ):
-    return await study_session_service.update_study_session(session_id, session_data, current_user.uid, session)
+    return await study_session_service.update_study_session(session_id, session_data, current_user.uid, db)
 
