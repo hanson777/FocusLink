@@ -1,30 +1,10 @@
-// export default function TodayStatsCard ({ minutesToday = 0, sessionsToday = 0 }) {
-//     return (
-//         <div className="card">
-//             <h2 className="section-title">Today's Stats</h2>
-
-//             <div className="flex items-left justify-center flex-col gap-4">
-//                 <div flex items-center mt-4>
-//                     <p className="text-3xl font-bold text-primary">{sessionsToday}</p>
-//                     <p className="text-textLight text-md">Sessions</p>
-//                 </div>
-//                 <div flex items-center mt-4>
-//                     <p className="text-3xl font-bold text-primary">{minutesToday}</p>
-//                     <p className="text-textLight text-md">Minutes</p>
-//                 </div>
-//             </div>
-
-//         </div>
-//     );
-// }
-
 export default function TodayStatsCard({
   sessionsToday = 0,
   minutesToday = 0
 }) {
   return (
     <div className="card">
-      <h2 className="section-title">Today’s Stats</h2>
+      <h2 className="section-title">Today's Stats</h2>
 
       <div className="grid grid-cols-2 gap-4 mt-4">
 

@@ -23,11 +23,18 @@ class LoginResponse(BaseModel):
     token: str
 
 
+class UserStatusPayload(BaseModel):
+    status: str
+
+
 # 🔧 Fake user database for now
 USERS = {
     "student@example.com": "123456",
     "anniezhang2004@163.com": "zzc040717",
 }
+
+# simple in-memory user-status tracker for the timer
+CURRENT_STATUS = "Idle"
 
 
 @app.post("/api/login", response_model=LoginResponse)
@@ -47,24 +54,35 @@ def login(req: LoginRequest):
     token = f"token-for-{req.email}"
     return {"token": token}
 
+# @app.post("/api/register", response_model=LoginResponse)
+# def register(req: RegisterRequest):
+#     """
+#     Simple registration API:
 
-@app.post("/api/register", response_model=LoginResponse)
-def register(req: RegisterRequest):
-    """
-    Simple registration API:
+#     Request: { "email": "...", "password": "..." }
+#     - Fails if email already exists
+#     - Saves user to users.json
+#     - Returns a token so the client can auto-login
+#     """
+#     if req.email in USERS:
+#         raise HTTPException(status_code=400, detail="Email already registered")
 
-    Request: { "email": "...", "password": "..." }
-    - Fails if email already exists
-    - Saves user to users.json
-    - Returns a token so the client can auto-login
-    """
-    if req.email in USERS:
-        raise HTTPException(status_code=400, detail="Email already registered")
+#     # ⚠️ For real apps you should hash the password.
+#     # For hackathon/demo, we store it in plain text.
+#     USERS[req.email] = req.password
+#     save_users(USERS)
 
-    # ⚠️ For real apps you should hash the password.
-    # For hackathon/demo, we store it in plain text.
-    USERS[req.email] = req.password
-    save_users(USERS)
+#     token = f"token-for-{req.email}"
+#     return {"token": token}
 
-    token = f"token-for-{req.email}"
-    return {"token": token}
+
+@app.get("/api/user-status")
+def get_user_status():
+    return {"status": CURRENT_STATUS}
+
+
+@app.put("/api/user-status")
+def update_user_status(payload: UserStatusPayload):
+    global CURRENT_STATUS
+    CURRENT_STATUS = payload.status
+    return {"status": CURRENT_STATUS}

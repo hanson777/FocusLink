@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
+import { apiGet } from "../../api";
+
 export default function UserProfileCard({
   username = "John",
-  status = "Focusing", 
   lifetimeStats = {
     totalSessions: 42,
     totalMinutes: 2100,
@@ -10,6 +12,24 @@ export default function UserProfileCard({
   onClick,
   className,
 }) {
+  const [status, setStatus] = useState("Idle");
+
+  useEffect(() => {
+  fetchStatus();
+  const interval = setInterval(fetchStatus, 5000);
+  return () => clearInterval(interval);
+  }, []);
+
+  async function fetchStatus() {
+    try {
+      const data = await apiGet("/api/user-status");
+      // backend returns { uid, status, user_uid, created_at, updated_at }
+      setStatus(data.status ?? "Idle");
+    } catch (err) {
+      console.error("Failed to load status", err);
+    }
+  }
+
   const statusColor =
     status === "Focusing"
       ? "bg-success"
@@ -27,7 +47,6 @@ export default function UserProfileCard({
       <h2 className="section-title">Profile</h2>
 
       <div className="flex items-center gap-4 mt-4">
-
         <div className="w-14 h-14 rounded-full bg-surfaceLight flex items-center justify-center text-2xl font-bold text-primary">
           {username[0].toUpperCase()}
         </div>

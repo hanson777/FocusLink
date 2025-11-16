@@ -1,16 +1,63 @@
 const API_BASE_URL =
-  import.meta?.env?.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:8000";
+  import.meta?.env?.VITE_API_URL?.replace(/\/$/, "") ||
+  "https://undelved-censorable-ethan.ngrok-free.dev";
 
 const defaultHeaders = {
   "Content-Type": "application/json",
 };
 
+// Storage keys
+const STORAGE_KEYS = {
+  ACCESS_TOKEN: "authToken",
+  TOKEN_TYPE: "tokenType",
+  USER: "user",
+};
+
+// Get auth token from localStorage
+function getAuthToken() {
+  return localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+}
+
+// Store login response in localStorage
+function storeAuthData(data) {
+  localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.access_token);
+  localStorage.setItem(STORAGE_KEYS.TOKEN_TYPE, data.token_type);
+  localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
+}
+
+// Get current user from localStorage
+export function getCurrentUser() {
+  const userStr = localStorage.getItem(STORAGE_KEYS.USER);
+  if (!userStr) return null;
+  try {
+    return JSON.parse(userStr);
+  } catch (e) {
+    console.error("Failed to parse user data:", e);
+    return null;
+  }
+}
+
+// Clear auth data from localStorage
+export function clearAuthData() {
+  localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+  localStorage.removeItem(STORAGE_KEYS.TOKEN_TYPE);
+  localStorage.removeItem(STORAGE_KEYS.USER);
+}
+
 async function request(path, options = {}) {
+  const token = getAuthToken();
+  const headers = {
+    ...defaultHeaders,
+    ...(options.headers || {}),
+  };
+
+  // Add authorization header if token exists (except for auth endpoints)
+  if (token && !path.includes("/auth/")) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: {
-      ...defaultHeaders,
-      ...(options.headers || {}),
-    },
+    headers,
     ...options,
   });
 
@@ -26,6 +73,24 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+  // Auth endpoints
+  login: async (username, password) => {
+    const response = await request("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ username, password }),
+    });
+    // Store login response in localStorage
+    storeAuthData(response);
+    return response;
+  },
+
+  register: (userData) =>
+    request("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(userData),
+    }),
+
+  // Other endpoints
   getDashboard: () => request("/dashboard"),
   getProfile: () => request("/profile"),
   getTodayStats: () => request("/stats/today"),

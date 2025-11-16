@@ -1,12 +1,33 @@
-export default function DailyGoalCard({
-  dailyMinutesGoal = 90,
-  dailySessionsGoal = 3,
-  minutesToday = 45,
-  sessionsToday = 1,
-  onEditGoals
-}) {
-  const minutesPercent = Math.min((minutesToday / dailyMinutesGoal) * 100, 100);
-  const sessionsPercent = Math.min((sessionsToday / dailySessionsGoal) * 100, 100);
+import { useEffect, useState } from "react";
+import { apiGet, apiPut } from "../../api";
+
+export default function DailyGoalCard() {
+  const [goals, setGoals] = useState({ minutes: 90, sessions: 3 });
+  const [editing, setEditing] = useState(false);
+
+  function onEditGoals() {
+    setEditing(true);
+  }
+
+  useEffect(() => {
+    loadGoals();
+  }, []);
+
+  async function loadGoals() {
+    const data = await apiGet("/api/goals");
+    setGoals(data);
+  }
+
+  async function updateGoals(newGoals) {
+    const data = await apiPut("/api/goals", newGoals);
+    setGoals(data);
+  }
+
+  const minutesToday = 40;
+  const sessionsToday = 1;
+
+  const minutesPercent = Math.min((minutesToday / goals.minutes) * 100, 100);
+  const sessionsPercent = Math.min((sessionsToday / goals.sessions) * 100, 100);
 
   return (
     <div className="card">
@@ -17,7 +38,7 @@ export default function DailyGoalCard({
         <div>
           <div className="flex justify-between text-sm text-textLight/60 mb-1">
             <span>Minutes</span>
-            <span>{minutesToday}/{dailyMinutesGoal}</span>
+            <span>{minutesToday}/{goals.minutes}</span>
           </div>
 
           <div className="w-full h-3 bg-surfaceLight rounded-lg overflow-hidden">
@@ -31,7 +52,7 @@ export default function DailyGoalCard({
         <div>
           <div className="flex justify-between text-sm text-textLight/60 mb-1">
             <span>Sessions</span>
-            <span>{sessionsToday}/{dailySessionsGoal}</span>
+            <span>{sessionsToday}/{goals.sessions}</span>
           </div>
 
           <div className="w-full h-3 bg-surfaceLight rounded-lg overflow-hidden">

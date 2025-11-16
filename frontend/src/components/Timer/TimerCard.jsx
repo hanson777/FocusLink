@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { apiPut } from '../../api';
 
 const TIMER_MODES = {
   POMODORO: {
@@ -34,28 +35,49 @@ export default function FocusTimer() {
   const intervalRef = useRef(null);
   const audioRef = useRef(null);
 
+  // Helper to send status to backend
+  async function updateStatus(status) {
+    try {
+      await apiPut("/api/user-status", { status });
+    } catch (err) {
+      console.error("Status update failed:", err);
+    }
+  }
+
+  // Format time as MM:SS
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const startTimer = () => setIsActive(true);
-  const pauseTimer = () => setIsActive(false);
+  // === TIMER CONTROLS ===
 
-  const resetTimer = () => {
+  async function startTimer() {
+    setIsActive(true);
+    updateStatus("Focusing");
+  }
+
+  async function pauseTimer() {
     setIsActive(false);
-    setSessionType('work');
+    updateStatus("Idle");
+  }
+
+  async function resetTimer() {
+    setIsActive(false);
+    setSessionType("work");
     setCycleCount(0);
 
-    if (mode === 'CUSTOM') {
+    if (mode === "CUSTOM") {
       setTimeLeft(customWork * 60);
     } else {
       setTimeLeft(TIMER_MODES[mode].work);
     }
-  };
 
-  const nextSession = () => {
+    updateStatus("Idle");
+  }
+
+  async function nextSession() {
     let nextType = sessionType;
     let nextCycles = cycleCount;
     let nextTime = timeLeft;
@@ -102,36 +124,45 @@ export default function FocusTimer() {
     setTimeLeft(nextTime);
     setCycleCount(nextCycles);
     setIsActive(false);
-  };
 
-  const changeMode = (newMode) => {
+    // Backend update on session change
+    if (nextType === "work") updateStatus("Focusing");
+    else updateStatus("Break");
+  }
+
+  async function changeMode(newMode) {
     setMode(newMode);
     setIsActive(false);
     setSessionType('work');
     setCycleCount(0);
-    setTimeLeft(newMode === 'CUSTOM' ? customWork * 60 : TIMER_MODES[newMode].work);
-  };
 
-  const updateCustomSettings = () => {
+    setTimeLeft(newMode === "CUSTOM" ? customWork * 60 : TIMER_MODES[newMode].work);
+
+    updateStatus("Idle");
+  }
+
+  function updateCustomSettings() {
     if (mode === 'CUSTOM' && sessionType === 'work') {
       setTimeLeft(customWork * 60);
     }
     setShowSettings(false);
-  };
+  }
 
+  // === TIMER TICK EFFECT ===
   useEffect(() => {
     if (isActive && timeLeft > 0) {
       intervalRef.current = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
+        setTimeLeft(prev => prev - 1);
       }, 1000);
     } else if (timeLeft === 0 && isActive) {
       audioRef.current?.play().catch(() => {});
-      setTimeout(nextSession, 1000);
+      setTimeout(nextSession, 800);
     }
 
     return () => clearInterval(intervalRef.current);
   }, [isActive, timeLeft]);
 
+  // Display label
   const getSessionLabel = () => {
     if (sessionType === 'work') return 'Focus Time';
     if (sessionType === 'shortBreak') return 'Short Break';
@@ -149,8 +180,11 @@ export default function FocusTimer() {
       />
 
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold text-text mb-4 text-center">Focus Timer</h1>
+        <h1 className="text-3xl font-bold text-text mb-4 text-center">
+          Focus Timer
+        </h1>
 
+        {/* MODE BUTTONS */}
         <div className="flex gap-3 mb-8 justify-center flex-wrap">
           {Object.entries(TIMER_MODES).map(([key, cfg]) => (
             <button
@@ -163,8 +197,10 @@ export default function FocusTimer() {
           ))}
         </div>
 
+        {/* TIMER CARD */}
         <div className="card mb-6">
           <div className="text-center">
+
             <div className="mb-4">
               <span className="inline-block bg-primary/10 text-primary px-4 py-2 rounded-full font-medium">
                 {getSessionLabel()}
@@ -183,17 +219,24 @@ export default function FocusTimer() {
 
             <div className="flex gap-4 justify-center">
               {!isActive ? (
-                <button onClick={startTimer} className="btn btn-lg px-8 py-4">▶ Start</button>
+                <button onClick={startTimer} className="btn btn-lg px-8 py-4">Start</button>
               ) : (
-                <button onClick={pauseTimer} className="btn btn-lg bg-transparent px-8 py-4">⏸ Pause</button>
+                <button onClick={pauseTimer} className="btn btn-lg bg-transparent px-8 py-4">Pause</button>
               )}
 
-              <button onClick={resetTimer} className="btn btn-lg bg-transparent px-8 py-4">↻ Reset</button>
-              <button onClick={nextSession} className="btn btn-lg bg-transparent px-8 py-4">⏭ Skip</button>
+              <button onClick={resetTimer} className="btn btn-lg bg-transparent px-8 py-4">
+                Reset
+              </button>
+
+              <button onClick={nextSession} className="btn btn-lg bg-transparent px-8 py-4">
+                Skip
+              </button>
             </div>
+
           </div>
         </div>
 
+        {/* CUSTOM SETTINGS */}
         {mode === "CUSTOM" && (
           <div className="card mb-6">
             <button
