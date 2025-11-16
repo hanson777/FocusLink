@@ -136,9 +136,7 @@ export default function FocusTimer() {
     setCycleCount(nextCycles);
     setIsActive(false);
 
-    // Backend update on session change
-    if (nextType === "work") updateStatus("Focusing");
-    else updateStatus("Break");
+    updateStatus("Idle");
   }
 
     async function changeMode(newMode) {
