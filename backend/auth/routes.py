@@ -11,7 +11,7 @@ from .utils import authenticate_user, create_access_token, get_password_hash, To
 
 auth_router = APIRouter()
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 120
 
 class UserInfo(BaseModel):
     uid: uuid.UUID
