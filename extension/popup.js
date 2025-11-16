@@ -1,3 +1,62 @@
+
+// ---------- BLOCKING HELPERS ----------
+
+// Rule IDs for each site – must be unique integers
+const RULE_ID_INSTAGRAM = 1;
+const RULE_ID_YOUTUBE = 2;
+const RULE_ID_NETFLIX = 3;
+
+async function enableBlocking() {
+  try {
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      addRules: [
+        {
+          id: RULE_ID_INSTAGRAM,
+          priority: 1,
+          action: { type: "block" },
+          condition: {
+            urlFilter: "instagram.com",
+            resourceTypes: ["main_frame"]
+          }
+        },
+        {
+          id: RULE_ID_YOUTUBE,
+          priority: 1,
+          action: { type: "block" },
+          condition: {
+            urlFilter: "youtube.com",
+            resourceTypes: ["main_frame"]
+          }
+        },
+        {
+          id: RULE_ID_NETFLIX,
+          priority: 1,
+          action: { type: "block" },
+          condition: {
+            urlFilter: "netflix.com",
+            resourceTypes: ["main_frame"]
+          }
+        }
+      ],
+      removeRuleIds: [] 
+    });
+  } catch (err) {
+    console.error("Failed to enable blocking:", err);
+  }
+}
+
+async function disableBlocking() {
+  try {
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      addRules: [],
+      removeRuleIds: [RULE_ID_INSTAGRAM, RULE_ID_YOUTUBE, RULE_ID_NETFLIX]
+    });
+  } catch (err) {
+    console.error("Failed to disable blocking:", err);
+  }
+}
+
+
 // ---------- LOGIN SCREEN ----------
 function renderLoginScreen() {
     document.getElementById("popup").innerHTML = `
@@ -27,14 +86,9 @@ function renderLoginScreen() {
       statusEl.textContent = "Logging in...";
   
       try {
-        // ---- FAKE BACKEND CALL ----
-        // Later: replace this with a real fetch() to your API.
-        // e.g. const res = await fetch("https://api.yourapp.com/login", { ... })
-        //      const data = await res.json();
-        //      const token = data.token;
+        // TODO: replace with real API call later
         const fakeToken = "dev-token-for-" + email;
   
-        // Save token for later use
         await chrome.storage.sync.set({ authToken: fakeToken });
   
         statusEl.textContent = "Login successful!";
@@ -45,6 +99,7 @@ function renderLoginScreen() {
       }
     });
   }
+  
   
   // ---------- SESSION SCREEN ----------
   function renderSessionScreen() {
@@ -60,17 +115,23 @@ function renderLoginScreen() {
   
     document.getElementById("startBtn").addEventListener("click", async () => {
       await chrome.storage.sync.set({ sessionActive: true });
-      statusEl.textContent = "Session started!";
+  
+      await enableBlocking();
+  
+      statusEl.textContent = "Focus activated. The fun apps have been jailed temporarily.";
     });
   
     document.getElementById("endBtn").addEventListener("click", async () => {
       await chrome.storage.sync.set({ sessionActive: false });
-      statusEl.textContent = "Session ended.";
+  
+      await disableBlocking();
+  
+      statusEl.textContent = "Session ended. Blocking disabled.";
     });
   
-    // Clear authToken so next time popup opens it shows login again
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await chrome.storage.sync.remove("authToken");
+      await disableBlocking();
       renderLoginScreen();
     });
   }
@@ -80,10 +141,8 @@ function renderLoginScreen() {
     const { authToken } = await chrome.storage.sync.get("authToken");
   
     if (authToken) {
-      // already logged in → go straight to Start/End
       renderSessionScreen();
     } else {
-      // first time / logged out → show login screen
       renderLoginScreen();
     }
   }
