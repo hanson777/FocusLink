@@ -158,6 +158,12 @@ export const api = {
   // Study sessions
   getStudySessions: () => request("/study-sessions/"),
 
+  createStudySession: (payload) =>
+    request("/study-sessions/", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
   // ---- USER STATUS ----
   getUserStatus: () => request("/user-status/me"),
   getUserStatusByUid: (userUid) => request(`/user-status/${userUid}`),

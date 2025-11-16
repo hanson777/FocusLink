@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiGet, apiPut, apiPost } from "../../api";
+import api from "../../api";
 
 export default function DailyGoalCard() {
   const [goals, setGoals] = useState({
@@ -11,9 +12,18 @@ export default function DailyGoalCard() {
   const [editing, setEditing] = useState(false);
   const [editMinutes, setEditMinutes] = useState("0");
   const [editSessions, setEditSessions] = useState("0");
+  const [todayStats, setTodayStats] = useState({
+    minutes: 0,
+    sessions: 0,
+  });
 
   useEffect(() => {
     loadGoals();
+    loadTodayStats();
+    
+    // Refresh stats every 30 seconds to update in real-time
+    const interval = setInterval(loadTodayStats, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   async function loadGoals() {
@@ -110,9 +120,62 @@ export default function DailyGoalCard() {
       }
 
       setEditing(false);
+      // Reload today's stats after updating goals
+      await loadTodayStats();
     } catch (err) {
       console.error("Failed to update goals:", err);
       alert("Failed to save goals. Please try again.");
+    }
+  }
+
+  async function loadTodayStats() {
+    try {
+      const sessions = await api.getStudySessions();
+      
+      if (!Array.isArray(sessions)) {
+        console.warn("Expected array from /study-sessions/, got:", typeof sessions);
+        setTodayStats({ minutes: 0, sessions: 0 });
+        return;
+      }
+
+      // Get today's date range (start and end of day in UTC)
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const todayEnd = new Date(todayStart);
+      todayEnd.setDate(todayEnd.getDate() + 1);
+
+      // Filter sessions for today
+      const todaySessions = sessions.filter((session) => {
+        if (!session.start_time) return false;
+        const sessionDate = new Date(session.start_time);
+        return sessionDate >= todayStart && sessionDate < todayEnd;
+      });
+
+      // Calculate total minutes from start_time and end_time
+      // The API doesn't provide studying_duration, so we calculate it
+      const totalSeconds = todaySessions.reduce((sum, session) => {
+        if (!session.start_time || !session.end_time) {
+          return sum; // Skip sessions without both times
+        }
+        
+        const start = new Date(session.start_time);
+        const end = new Date(session.end_time);
+        const durationMs = end - start;
+        const durationSeconds = Math.floor(durationMs / 1000);
+        
+        return sum + durationSeconds;
+      }, 0);
+
+      const totalMinutes = Math.floor(totalSeconds / 60);
+      const sessionCount = todaySessions.length;
+
+      setTodayStats({
+        minutes: totalMinutes,
+        sessions: sessionCount,
+      });
+    } catch (err) {
+      console.error("Failed to load today's stats:", err);
+      setTodayStats({ minutes: 0, sessions: 0 });
     }
   }
 
@@ -122,9 +185,9 @@ export default function DailyGoalCard() {
     setEditing(true);
   }
 
-  // Example stats — replace with real later
-  const minutesToday = 40;
-  const sessionsToday = 1;
+  // Use real stats from study sessions
+  const minutesToday = todayStats.minutes;
+  const sessionsToday = todayStats.sessions;
 
   const minutesPercent = goals.minutes
     ? Math.min((minutesToday / goals.minutes) * 100, 100)

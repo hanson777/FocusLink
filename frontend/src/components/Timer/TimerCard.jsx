@@ -36,6 +36,8 @@ export default function FocusTimer() {
 
   const intervalRef = useRef(null);
   const audioRef = useRef(null);
+  const workSessionStartRef = useRef(null); // Track when work session started
+  const isWorkSessionActiveRef = useRef(false); // Track if work session is currently active
 
   // Helper to send status to backend
   async function updateStatus(status) {
@@ -44,6 +46,35 @@ export default function FocusTimer() {
     } catch (err) {
       console.error("Status update failed:", err);
     }
+  }
+
+  // Helper to finish a work session and create study session
+  async function finishWorkSession() {
+    if (!isWorkSessionActiveRef.current || !workSessionStartRef.current) {
+      return; // No active work session to finish
+    }
+
+    const endTime = new Date().toISOString();
+    const startTime = workSessionStartRef.current;
+    const durationMs = new Date(endTime) - new Date(startTime);
+    const durationSeconds = Math.floor(durationMs / 1000);
+
+    // Only create session if duration is at least 1 second
+    if (durationSeconds > 0) {
+      try {
+        await api.createStudySession({
+          start_time: startTime,
+          end_time: endTime,
+        });
+        console.log(`Study session created: ${durationSeconds} seconds`);
+      } catch (err) {
+        console.error("Failed to create study session:", err);
+      }
+    }
+
+    // Reset session tracking
+    workSessionStartRef.current = null;
+    isWorkSessionActiveRef.current = false;
   }
 
   useEffect(() => {
@@ -64,6 +95,9 @@ export default function FocusTimer() {
 
     if (sessionType === "work") {
         updateStatus("Focusing");
+        // Track work session start time
+        workSessionStartRef.current = new Date().toISOString();
+        isWorkSessionActiveRef.current = true;
     } else {
         updateStatus("Break");
     }
@@ -72,9 +106,14 @@ export default function FocusTimer() {
   async function pauseTimer() {
     setIsActive(false);
     updateStatus("Idle");
+    // Note: We don't finish the work session on pause - user might resume
+    // The session will be finished when they reset or the timer completes
   }
 
   async function resetTimer() {
+    // Finish any active work session before resetting
+    await finishWorkSession();
+
     setIsActive(false);
     setSessionType("work");
     setCycleCount(0);
@@ -131,6 +170,11 @@ export default function FocusTimer() {
       }
     }
 
+    // If we're finishing a work session, create study session
+    if (sessionType === "work" && isWorkSessionActiveRef.current) {
+      await finishWorkSession();
+    }
+
     setSessionType(nextType);
     setTimeLeft(nextTime);
     setCycleCount(nextCycles);
@@ -141,6 +185,9 @@ export default function FocusTimer() {
   }
 
     async function changeMode(newMode) {
+        // Finish any active work session before changing mode
+        await finishWorkSession();
+
         setIsActive(false);
         setSessionType("work");
         setCycleCount(0);
