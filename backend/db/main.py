@@ -1,7 +1,7 @@
 from sqlmodel import create_engine, text, SQLModel
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine, create_async_engine, async_sessionmaker
 from backend.config import Settings
-
+from . import models
 
 engine = create_async_engine(Settings.DATABASE_URL, echo=True)
 

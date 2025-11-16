@@ -4,13 +4,13 @@ from fastapi import FastAPI
 
 
 @asynccontextmanager
-async def lifespan():
+async def lifespan(app: FastAPI):
     print("Starting app")
     await init_db()
     yield
     print("Stopping app")
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 
 

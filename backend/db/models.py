@@ -20,6 +20,7 @@ class User(SQLModel, table=True):
     first_name: str
     last_name: str
     password_hash: str
+    is_verified: bool = Field(default=False)
     created_at: datetime = Field(
         sa_column=Column(
             pg.TIMESTAMP,
@@ -34,6 +35,13 @@ class User(SQLModel, table=True):
             default=datetime.now(),
         )
     )
+
+    studies: Optional[List["StudySession"]] = Relationship(back_populates="user")
+    tasks: Optional[List["Task"]] = Relationship(back_populates="user")
+    user_status: Optional[List["UserStatus"]] = Relationship(back_populates="user")
+    friend_reqs: Optional[List["Friend"]] = Relationship(back_populates="friend_req")
+    friends: Optional[List["Friend"]] = Relationship(back_populates="user")
+    blocked_websites: Optional[List["BlockedWebsites"]] = Relationship(back_populates="user")
 
     def __repr__(self):
         return f"<User(username={self.username}, email={self.email})>"
@@ -50,8 +58,12 @@ class StudySession(SQLModel, table=True):
         )
     )
 
-    user_uid: str = Field(
-        foreign_key="users.uid"
+    user_uid: uuid.UUID = Field(
+        sa_column=Column(
+            pg.UUID,
+            nullable=False,
+            foreign_key="users.uid"
+        )
     )
 
     status: str
