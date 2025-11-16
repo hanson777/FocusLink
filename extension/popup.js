@@ -4,7 +4,7 @@
 const RULE_ID_INSTAGRAM = 1;
 const RULE_ID_YOUTUBE = 2;
 const RULE_ID_NETFLIX = 3;
-const API_BASE = "https://undelved-censorable-ethan.ngrok-free.dev/"; // your FastAPI backend
+const API_BASE = "https://undelved-censorable-ethan.ngrok-free.dev"; 
 
 async function enableBlocking() {
   try {
@@ -59,6 +59,7 @@ async function disableBlocking() {
 // ---------- INLINE LOGIN SCREEN (INSIDE EXTENSION) ----------
 function renderInlineLoginScreen() {
     document.getElementById("popup").innerHTML = `
+    <div class = 'card'>
       <h3>Focus App</h3>
       <p style="font-size:12px;">
         Log in to your Focus account.
@@ -73,6 +74,7 @@ function renderInlineLoginScreen() {
       <button id="loginBtn">Log in</button>
       <button id="backBtn" style="margin-top:6px;">Back</button>
       <p id="status" style="margin-top:8px; font-size:12px;"></p>
+    </div>
     `;
   
     const statusEl = document.getElementById("status");
@@ -134,6 +136,7 @@ function renderInlineLoginScreen() {
 // ---------- REGISTER SCREEN (INSIDE EXTENSION) ----------
 function renderRegisterScreen() {
   document.getElementById("popup").innerHTML = `
+  <div class = 'card'>
     <h3>Focus App</h3>
     <p style="font-size:12px;">
       Create a new Focus account.
@@ -157,6 +160,7 @@ function renderRegisterScreen() {
     <button id="registerBtn">Sign up</button>
     <button id="backBtn" style="margin-top:6px;">Back</button>
     <p id="status" style="margin-top:8px; font-size:12px;"></p>
+    </div>
   `;
 
   const statusEl = document.getElementById("status");
@@ -222,6 +226,7 @@ function renderRegisterScreen() {
 // ---- CONNECT SCREEN (CHOOSE LOGIN METHOD) ----
 function renderConnectScreen() {
   document.getElementById("popup").innerHTML = `
+    <div class='card'>
     <h3>Focus App</h3>
     <p style="font-size:12px;">
       Log in to start a focus session.
@@ -230,6 +235,7 @@ function renderConnectScreen() {
     <button id="inlineRegisterBtn">Sign up (extension)</button>
     <button id="openLogin">Log in on website</button>
     <p id="status" style="margin-top:8px; font-size:12px;"></p>
+    </div>
   `;
 
   const statusEl = document.getElementById("status");
@@ -260,12 +266,14 @@ function renderConnectScreen() {
 // ---------- SESSION SCREEN ----------
 function renderSessionScreen() {
     document.getElementById("popup").innerHTML = `
+    <div class = 'card'>
       <h3>Focus App</h3>
       <p id="userInfo" style="font-size:12px; margin-bottom:8px;"></p>
       <button id="startBtn">Start Session</button>
       <button id="endBtn">End Session</button>
       <button id="logoutBtn" style="margin-top: 10px;">Log out</button>
       <p id="sessionStatus"></p>
+    </div>
     `;
   
     const statusEl = document.getElementById("sessionStatus");
