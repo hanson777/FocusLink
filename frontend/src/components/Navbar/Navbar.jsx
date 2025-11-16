@@ -3,9 +3,13 @@ import React from "react";
 export default function Navbar({ onNavigate }) {
   return (
     <nav className="w-full bg-surface/70 backdrop-blur-md border-b border-surfaceLight px-6 py-4 flex justify-between items-center">
-      <h1 className="text-3xl font-bold text-textLight">
+      <button
+        className="text-3xl font-bold text-textLight hover:text-textLight/80 transition"
+        onClick={() => onNavigate && onNavigate("home")}
+        type="button"
+      >
         Dashboard
-      </h1>
+      </button>
 
       <div className="flex items-center gap-6 text-textLight/80">
         <button

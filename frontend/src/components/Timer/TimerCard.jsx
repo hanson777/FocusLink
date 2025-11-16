@@ -148,8 +148,8 @@ export default function FocusTimer() {
         preload="auto"
       />
 
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-text mb-8 text-center">Focus Timer</h1>
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold text-text mb-4 text-center">Focus Timer</h1>
 
         <div className="flex gap-3 mb-8 justify-center flex-wrap">
           {Object.entries(TIMER_MODES).map(([key, cfg]) => (
