@@ -1,5 +1,5 @@
 export default function WeeklyStatsCard({
-  weeklyData = [30, 45, 12, 60, 90, 20, 15]
+  weeklyData = [30, 45, 12, 60, 90, 180, 15]
 }) {
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const maxVal = Math.max(...weeklyData, 1);
