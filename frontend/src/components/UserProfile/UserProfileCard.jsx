@@ -63,24 +63,24 @@ export default function UserProfileCard({
       return;
     }
 
-    // Load user profile data
+    // Load user profile data with stats from API
     try {
       const userData = await api.getUser(currentUser.uid);
       setUsername(userData.username || currentUser.username || "Unknown");
       setUserUid(currentUser.uid);
+      
+      // Use stats from API response
+      setLifetimeStats({
+        totalSessions: userData.total_study_sessions || 0,
+        totalMinutes: userData.total_study_minutes || 0,
+        longestStreak: userData.longest_streak || 0,
+        averageSession: userData.average_session_minutes || 0,
+      });
     } catch (err) {
       console.error("Failed to load user data:", err);
       // Fallback to username from localStorage
       setUsername(currentUser.username || "Unknown");
       setUserUid(currentUser.uid);
-    }
-
-    // Load study sessions to calculate stats (only for current user)
-    try {
-      const sessions = await api.getStudySessions();
-      calculateStats(sessions || []);
-    } catch (err) {
-      console.error("Failed to load study sessions:", err);
       // Keep default stats if fetch fails
     }
   }
@@ -105,23 +105,28 @@ export default function UserProfileCard({
         setUsername(friend.username);
         setUserUid(friend.uid);
         
-        // Try to get full user data
+        // Get full user data with stats from API
         try {
           const userData = await api.getUser(friend.uid);
           setUsername(userData.username || friend.username);
+          
+          // Use stats from API response
+          setLifetimeStats({
+            totalSessions: userData.total_study_sessions || 0,
+            totalMinutes: userData.total_study_minutes || 0,
+            longestStreak: userData.longest_streak || 0,
+            averageSession: userData.average_session_minutes || 0,
+          });
         } catch (err) {
           console.error("Failed to load friend's full profile:", err);
+          // Set default stats if fetch fails
+          setLifetimeStats({
+            totalSessions: 0,
+            totalMinutes: 0,
+            longestStreak: 0,
+            averageSession: 0,
+          });
         }
-
-        // Note: We can't get friend's study sessions with current API
-        // The /study-sessions/ endpoint only returns current user's sessions
-        // So we'll show 0 stats for friends (or you could add a friend stats endpoint)
-        setLifetimeStats({
-          totalSessions: 0,
-          totalMinutes: 0,
-          longestStreak: 0,
-          averageSession: 0,
-        });
         
         // Fetch friend's status after UID is set
         // This will be triggered by the useEffect that watches userUid
@@ -146,73 +151,6 @@ export default function UserProfileCard({
     }
   }
 
-  function calculateStats(sessions) {
-    if (!sessions || sessions.length === 0) {
-      setLifetimeStats({
-        totalSessions: 0,
-        totalMinutes: 0,
-        longestStreak: 0,
-        averageSession: 0,
-      });
-      return;
-    }
-
-    // Calculate total sessions and minutes
-    const totalSessions = sessions.length;
-    const totalMinutes = sessions.reduce((sum, session) => {
-      // StudySession model has focus_minutes field
-      const minutes = session.focus_minutes || 0;
-      return sum + minutes;
-    }, 0);
-
-    // Calculate average session duration
-    const averageSession = totalSessions > 0 ? Math.round(totalMinutes / totalSessions) : 0;
-
-    // Calculate longest streak (consecutive days with sessions)
-    // This is a simplified version - you might want to improve this based on your data structure
-    let longestStreak = 0;
-    if (sessions.length > 0) {
-      // Group sessions by date and calculate streak
-      const sessionsByDate = new Map();
-      sessions.forEach(session => {
-        const date = new Date(session.created_at || session.start_time || Date.now()).toDateString();
-        if (!sessionsByDate.has(date)) {
-          sessionsByDate.set(date, []);
-        }
-        sessionsByDate.get(date).push(session);
-      });
-
-      const sortedDates = Array.from(sessionsByDate.keys()).sort((a, b) => 
-        new Date(b) - new Date(a)
-      );
-
-      let currentStreak = 0;
-      let lastDate = null;
-      for (const date of sortedDates) {
-        const dateObj = new Date(date);
-        if (lastDate === null) {
-          lastDate = dateObj;
-          currentStreak = 1;
-        } else {
-          const daysDiff = Math.floor((lastDate - dateObj) / (1000 * 60 * 60 * 24));
-          if (daysDiff === 1) {
-            currentStreak++;
-            lastDate = dateObj;
-          } else {
-            break;
-          }
-        }
-      }
-      longestStreak = currentStreak;
-    }
-
-    setLifetimeStats({
-      totalSessions,
-      totalMinutes,
-      longestStreak,
-      averageSession,
-    });
-  }
 
   async function fetchStatus() {
     try {
