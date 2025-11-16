@@ -10,7 +10,6 @@ from sqlalchemy.ext.asyncio.session import AsyncSession
 
 from backend.config import Settings
 from backend.db.main import get_session
-from .service import get_user
 
 class Token(BaseModel):
     access_token: str
@@ -31,6 +30,7 @@ def get_password_hash(password: str):
     return password_context.hash(password)
 
 async def authenticate_user(username: str, password: str, session: AsyncSession):
+    from .service import get_user
     user = await get_user(username, session)
     if not user:
         return False
@@ -53,6 +53,7 @@ async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
     session: AsyncSession = Depends(get_session)
 ):
+    from .service import get_user
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

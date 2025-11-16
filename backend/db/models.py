@@ -1,6 +1,7 @@
 import uuid
 import sqlalchemy.dialects.postgresql as pg
 from sqlmodel import SQLModel, Field, Column, Relationship
+from sqlalchemy import ForeignKey
 from datetime import datetime
 from typing import Optional, List
 
@@ -61,8 +62,8 @@ class StudySession(SQLModel, table=True):
     user_uid: uuid.UUID = Field(
         sa_column=Column(
             pg.UUID,
-            nullable=False,
-            foreign_key="users.uid"
+            ForeignKey("users.uid"),
+            nullable=False
         )
     )
 
