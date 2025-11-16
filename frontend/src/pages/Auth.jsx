@@ -115,7 +115,7 @@ export default function Auth({ onLogin }) {
       <div className="w-full max-w-md">
         <div className="card">
           <h1 className="text-3xl font-bold text-textLight mb-2 text-center">
-            Focus App
+            Focus Link
           </h1>
           <p className="text-textLight/60 text-center mb-6">
             {mode === "login"
