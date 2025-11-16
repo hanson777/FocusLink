@@ -62,8 +62,9 @@ function renderInlineLoginScreen() {
       <p style="font-size:12px;">
         Log in to your Focus account.
       </p>
-      <label style="font-size:12px;">Email</label>
-      <input id="email" type="email" placeholder="you@example.com" />
+  
+      <label style="font-size:12px;">Username</label>
+      <input id="username" type="text" placeholder="yourusername" />
   
       <label style="font-size:12px; margin-top:6px; display:block;">Password</label>
       <input id="password" type="password" placeholder="••••••••" />
@@ -78,38 +79,42 @@ function renderInlineLoginScreen() {
     const backBtn = document.getElementById("backBtn");
   
     loginBtn.addEventListener("click", async () => {
-      const email = document.getElementById("email").value.trim();
+      const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value.trim();
   
-      if (!email || !password) {
-        statusEl.textContent = "Please enter email and password.";
+      if (!username || !password) {
+        statusEl.textContent = "Please enter username and password.";
         return;
       }
   
       statusEl.textContent = "Logging in...";
   
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/login", {
+        const res = await fetch("http://127.0.0.1:8000/auth/login", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Accept": "application/json"
           },
-          body: JSON.stringify({ email, password })
+          body: JSON.stringify({ username, password })
         });
   
         if (!res.ok) {
           if (res.status === 401) {
-            statusEl.textContent = "Incorrect email or password.";
+            statusEl.textContent = "Incorrect username or password.";
           } else {
             statusEl.textContent = "Server error. Please try again.";
           }
           return;
         }
   
-        const data = await res.json();   // { token: "token-for-..." }
+        const data = await res.json();
+        // data = { access_token, token_type, user: { uid, username } }
   
-        await chrome.storage.sync.set({ authToken: data.token });
+        await chrome.storage.sync.set({
+          authToken: data.access_token,
+          username: data.user.username
+        });
   
         statusEl.textContent = "Login successful!";
         setTimeout(renderSessionScreen, 400);
@@ -122,7 +127,76 @@ function renderInlineLoginScreen() {
     backBtn.addEventListener("click", () => {
       renderConnectScreen();
     });
-  }
+  }  
+
+// ---------- REGISTER SCREEN (INSIDE EXTENSION) ----------
+function renderRegisterScreen() {
+  document.getElementById("popup").innerHTML = `
+    <h3>Focus App</h3>
+    <p style="font-size:12px;">
+      Create a new Focus account.
+    </p>
+    <label style="font-size:12px;">Email</label>
+    <input id="email" type="email" placeholder="you@example.com" />
+
+    <label style="font-size:12px; margin-top:6px; display:block;">Password</label>
+    <input id="password" type="password" placeholder="••••••••" />
+
+    <button id="registerBtn">Sign up</button>
+    <button id="backBtn" style="margin-top:6px;">Back</button>
+    <p id="status" style="margin-top:8px; font-size:12px;"></p>
+  `;
+
+  const statusEl = document.getElementById("status");
+  const registerBtn = document.getElementById("registerBtn");
+  const backBtn = document.getElementById("backBtn");
+
+  registerBtn.addEventListener("click", async () => {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    if (!email || !password) {
+      statusEl.textContent = "Please enter email and password.";
+      return;
+    }
+
+    statusEl.textContent = "Creating your account...";
+
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (!res.ok) {
+        if (res.status === 400) {
+          statusEl.textContent = "This email is already registered.";
+        } else {
+          statusEl.textContent = "Server error. Please try again.";
+        }
+        return;
+      }
+
+      const data = await res.json(); // { token: "token-for-<email>" }
+
+      await chrome.storage.sync.set({ authToken: data.token });
+
+      statusEl.textContent = "Account created! You're logged in 🎉";
+      setTimeout(renderSessionScreen, 400);
+    } catch (err) {
+      console.error("Register/network error:", err);
+      statusEl.textContent = "Network error. Please try again.";
+    }
+  });
+
+  backBtn.addEventListener("click", () => {
+    renderConnectScreen();
+  });
+}
 
 // ---- CONNECT SCREEN (CHOOSE LOGIN METHOD) ----
 function renderConnectScreen() {
@@ -132,12 +206,14 @@ function renderConnectScreen() {
       Log in to start a focus session.
     </p>
     <button id="inlineLoginBtn">Log in here (extension)</button>
+    <button id="inlineRegisterBtn">Sign up (extension)</button>
     <button id="openLogin">Log in on website</button>
     <p id="status" style="margin-top:8px; font-size:12px;"></p>
   `;
 
   const statusEl = document.getElementById("status");
   const inlineLoginBtn = document.getElementById("inlineLoginBtn");
+  const inlineRegisterBtn = document.getElementById("inlineRegisterBtn");
   const openLoginBtn = document.getElementById("openLogin");
 
   // Option 1: login directly inside the extension
@@ -145,10 +221,14 @@ function renderConnectScreen() {
     renderInlineLoginScreen();
   });
 
-  // Option 2: open website login page
+  // Option 2: sign up directly inside the extension
+  inlineRegisterBtn.addEventListener("click", () => {
+    renderRegisterScreen();
+  });
+
+  // Option 3: open website login page (you can ignore this for now)
   openLoginBtn.addEventListener("click", () => {
     chrome.tabs.create({
-      // TODO: replace with your real site URL later
       url: "https://student-focus-app-1.onrender.com/"
     });
     statusEl.textContent =
@@ -193,12 +273,13 @@ async function init() {
   const { authToken } = await chrome.storage.sync.get("authToken");
 
   if (authToken) {
-    // Either inline login OR website login already saved a token
+    // Either inline login OR register already saved a token
     renderSessionScreen();
   } else {
-    // No token yet → show login choices
+    // No token yet → show login/register choices
     renderConnectScreen();
   }
 }
 
 init();
+
