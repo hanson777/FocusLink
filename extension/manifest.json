@@ -14,8 +14,17 @@
       "*://*.youtube.com/*",
       "*://*.netflix.com/*"
     ],
+    "background": {
+      "service_worker": "background.js"
+    },
     "declarative_net_request": {
       "rule_resources": []
+    },
+    "externally_connectable": {
+      "matches": [
+        "https://about.canvas.ubc.ca/"
+      ]
     }
   }
+  
   
