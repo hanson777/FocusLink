@@ -11,7 +11,19 @@ body {
   @apply bg-primary/20 text-primary 
          hover:bg-primary/30 
          rounded-lg text-sm font-semibold 
-         transition shadow-glow;
+         transition;
+}
+
+.btn-sm {
+  @apply px-3 py-1 text-xs; 
+}
+
+.btn-md {
+  @apply px-4 py-2 text-sm;
+}
+
+.btn-lg {
+  @apply px-5 py-3 text-base;
 }
 
 .card {
@@ -28,4 +40,48 @@ body {
 
 .btn-accent {
   @apply bg-accent hover:bg-accentLight text-bg px-4 py-2 rounded-lg transition shadow-glow;
+}
+
+/* ============================
+   Global Slider (range input)
+   Matches btn + btn-lg theme
+   ============================ */
+
+input[type="range"].slider {
+  @apply w-full h-3 rounded-full bg-surfaceLight cursor-pointer appearance-none;
+}
+
+input[type="range"].slider::-webkit-slider-runnable-track {
+  @apply h-3 rounded-full bg-surfaceLight;
+}
+
+input[type="range"].slider::-webkit-slider-thumb {
+  appearance: none;
+  @apply w-5 h-5 rounded-full bg-primary border-2 border-primary/80 transition;
+  margin-top: -4px;
+}
+
+input[type="range"].slider::-webkit-slider-thumb:hover {
+  @apply shadow-glow;
+}
+
+input[type="range"].slider:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+  @apply shadow-lg;
+}
+
+input[type="range"].slider::-moz-range-thumb {
+  @apply w-5 h-5 rounded-full bg-primary border-2 border-primary/80 transition;
+}
+
+input[type="range"].slider::-moz-range-thumb:hover {
+  @apply shadow-glow;
+}
+
+input[type="range"].slider::-moz-range-progress {
+  @apply bg-primary;
+}
+
+input[type="range"].slider::-moz-range-track {
+  @apply bg-surfaceLight h-3 rounded-full;
 }

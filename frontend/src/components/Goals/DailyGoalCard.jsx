@@ -44,7 +44,7 @@ export default function DailyGoalCard({
 
         <button
             onClick={onEditGoals}
-            className="btn btn-sm mt-4"
+            className="btn btn-lg mt-4"
         >
             Edit Goals
         </button>
