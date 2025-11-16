@@ -1,6 +1,6 @@
 const API_BASE_URL = (
   import.meta.env.VITE_API_URL ||
-  "https://undelved-censorable-ethan.ngrok-free.dev/"
+  "https://student-focus-app-backend.onrender.com/"
 ).replace(/\/$/, "");
 
 const defaultHeaders = {
