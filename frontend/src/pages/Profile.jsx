@@ -36,9 +36,7 @@ export default function Profile({ viewingUsername = null, onBack, onNavigate }) 
 
                                         <div className="grid grid-cols-2 gap-6">
                                             <UserProfileCard 
-                                                username={profileData.username}
-                                                status={profileData.status}
-                                                lifetimeStats={profileData.lifetimeStats}
+                                                viewingUsername={viewingUsername}
                                             />
                                             {isOwnProfile && (
                                                 <div>

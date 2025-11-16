@@ -159,6 +159,18 @@ export const api = {
   getStudySessions: () => request("/study-sessions/"),
 
   // ---- USER STATUS ----
+  getUserStatus: () => request("/user-status/me"),
+  getUserStatusByUid: (userUid) => request(`/user-status/${userUid}`),
+  updateStatus: (payload) =>
+    request("/user-status/", {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }),
+  updateUserStatus: (payload) =>
+    request("/user-status/", {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }),
   updateGoals: (payload) =>
     request("/goals/daily", {
       method: "PUT",
@@ -172,11 +184,6 @@ export const api = {
   updateTimerSession: (sessionId, payload) =>
     request(`/timer/${sessionId}`, {
       method: "PATCH",
-      body: JSON.stringify(payload),
-    }),
-  updateUserStatus: (payload) =>
-    request("/user-status/", {
-      method: "PUT",
       body: JSON.stringify(payload),
     }),
   addDailyProgress: (payload) =>

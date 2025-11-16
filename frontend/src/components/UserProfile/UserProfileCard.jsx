@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import { apiGet, getCurrentUser } from "../../api";
+import { getCurrentUser } from "../../api";
 import api from "../../api";
 
 export default function UserProfileCard({
+  viewingUsername = null, // If provided, show this user's profile instead of current user
   onClick,
   className,
 }) {
   const [status, setStatus] = useState("Idle");
   const [username, setUsername] = useState("Loading...");
+  const [userUid, setUserUid] = useState(null);
   const [lifetimeStats, setLifetimeStats] = useState({
     totalSessions: 0,
     totalMinutes: 0,
@@ -18,47 +20,129 @@ export default function UserProfileCard({
 
   useEffect(() => {
     loadUserData();
-    fetchStatus();
-    const interval = setInterval(fetchStatus, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  }, [viewingUsername]);
+
+  // Separate effect for status updates
+  useEffect(() => {
+    if (!viewingUsername) {
+      // Only fetch status for current user
+      fetchStatus();
+      const interval = setInterval(fetchStatus, 5000);
+      return () => clearInterval(interval);
+    } else if (userUid) {
+      // For friend profiles, fetch their status once when UID is available
+      fetchFriendStatus();
+    }
+  }, [viewingUsername, userUid]);
 
   async function loadUserData() {
     try {
       setLoading(true);
-      const currentUser = getCurrentUser();
       
-      if (!currentUser || !currentUser.uid) {
-        console.error("No current user found");
-        setUsername("Unknown");
-        setLoading(false);
-        return;
-      }
-
-      // Load user profile data
-      try {
-        const userData = await api.getUser(currentUser.uid);
-        setUsername(userData.username || currentUser.username || "Unknown");
-      } catch (err) {
-        console.error("Failed to load user data:", err);
-        // Fallback to username from localStorage
-        setUsername(currentUser.username || "Unknown");
-      }
-
-      // Load study sessions to calculate stats
-      try {
-        const sessions = await api.getStudySessions();
-        calculateStats(sessions || []);
-      } catch (err) {
-        console.error("Failed to load study sessions:", err);
-        // Keep default stats if fetch fails
+      if (viewingUsername) {
+        // Loading a friend's profile
+        await loadFriendProfile(viewingUsername);
+      } else {
+        // Loading current user's profile
+        await loadCurrentUserProfile();
       }
     } catch (err) {
       console.error("Failed to load user data:", err);
-      const currentUser = getCurrentUser();
-      setUsername(currentUser?.username || "Unknown");
+      setUsername("Unknown");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadCurrentUserProfile() {
+    const currentUser = getCurrentUser();
+    
+    if (!currentUser || !currentUser.uid) {
+      console.error("No current user found");
+      setUsername("Unknown");
+      return;
+    }
+
+    // Load user profile data
+    try {
+      const userData = await api.getUser(currentUser.uid);
+      setUsername(userData.username || currentUser.username || "Unknown");
+      setUserUid(currentUser.uid);
+    } catch (err) {
+      console.error("Failed to load user data:", err);
+      // Fallback to username from localStorage
+      setUsername(currentUser.username || "Unknown");
+      setUserUid(currentUser.uid);
+    }
+
+    // Load study sessions to calculate stats (only for current user)
+    try {
+      const sessions = await api.getStudySessions();
+      calculateStats(sessions || []);
+    } catch (err) {
+      console.error("Failed to load study sessions:", err);
+      // Keep default stats if fetch fails
+    }
+  }
+
+  async function loadFriendProfile(friendUsername) {
+    try {
+      // Search for the user by username
+      const searchResults = await api.searchUsers(friendUsername);
+      
+      if (!searchResults || searchResults.length === 0) {
+        console.error("Friend not found:", friendUsername);
+        setUsername(friendUsername);
+        return;
+      }
+
+      // Find exact match (case-insensitive)
+      const friend = searchResults.find(
+        (u) => u.username.toLowerCase() === friendUsername.toLowerCase()
+      ) || searchResults[0];
+
+      if (friend && friend.uid) {
+        setUsername(friend.username);
+        setUserUid(friend.uid);
+        
+        // Try to get full user data
+        try {
+          const userData = await api.getUser(friend.uid);
+          setUsername(userData.username || friend.username);
+        } catch (err) {
+          console.error("Failed to load friend's full profile:", err);
+        }
+
+        // Note: We can't get friend's study sessions with current API
+        // The /study-sessions/ endpoint only returns current user's sessions
+        // So we'll show 0 stats for friends (or you could add a friend stats endpoint)
+        setLifetimeStats({
+          totalSessions: 0,
+          totalMinutes: 0,
+          longestStreak: 0,
+          averageSession: 0,
+        });
+        
+        // Fetch friend's status after UID is set
+        // This will be triggered by the useEffect that watches userUid
+      } else {
+        setUsername(friendUsername);
+      }
+    } catch (err) {
+      console.error("Failed to load friend profile:", err);
+      setUsername(friendUsername);
+    }
+  }
+
+  async function fetchFriendStatus() {
+    if (!userUid) return;
+    
+    try {
+      const data = await api.getUserStatusByUid(userUid);
+      setStatus(data.status ?? "Idle");
+    } catch (err) {
+      console.error("Failed to load friend status", err);
+      setStatus("Idle");
     }
   }
 
@@ -132,7 +216,7 @@ export default function UserProfileCard({
 
   async function fetchStatus() {
     try {
-      const data = await apiGet("/user-status/me");
+      const data = await api.getUserStatus();
       // backend returns { uid, status, user_uid, created_at, updated_at }
       setStatus(data.status ?? "Idle");
     } catch (err) {
