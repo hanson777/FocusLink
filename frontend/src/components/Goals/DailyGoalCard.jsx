@@ -20,8 +20,19 @@ export default function DailyGoalCard() {
     try {
       const list = await apiGet("/daily-goals/");
 
+      // Validate response is an array
+      if (!Array.isArray(list)) {
+        console.warn("Expected array from /daily-goals/, got:", typeof list);
+        setGoals({
+          uid: null,
+          minutes: 90,
+          sessions: 3,
+        });
+        return;
+      }
+
       // If the user has no goals yet, create them
-      if (!list || list.length === 0) {
+      if (list.length === 0) {
         try {
           const created = await apiPost("/daily-goals/", {
             minutes_goal: 90,
@@ -30,8 +41,8 @@ export default function DailyGoalCard() {
 
           setGoals({
             uid: created.uid,
-            minutes: created.minutes_goal,
-            sessions: created.session_goal,
+            minutes: created.minutes_goal || 90,
+            sessions: created.session_goal || 3,
           });
           return;
         } catch (createError) {
@@ -46,11 +57,22 @@ export default function DailyGoalCard() {
         }
       }
 
+      // Get the first goal (API returns array per docs)
       const g = list[0];
+      if (!g || typeof g !== "object") {
+        console.warn("Invalid goal object:", g);
+        setGoals({
+          uid: null,
+          minutes: 90,
+          sessions: 3,
+        });
+        return;
+      }
+
       setGoals({
         uid: g.uid,
-        minutes: g.minutes_goal,
-        sessions: g.session_goal,
+        minutes: g.minutes_goal ?? 90,
+        sessions: g.session_goal ?? 3,
       });
     } catch (err) {
       console.error("Failed to load goals:", err);
