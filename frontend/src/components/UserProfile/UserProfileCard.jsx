@@ -1,0 +1,76 @@
+export default function UserProfileCard({
+  username = "John",
+  status = "Focusing", 
+  lifetimeStats = {
+    totalSessions: 42,
+    totalMinutes: 2100,
+    longestStreak: 6,
+    averageSession: 38,
+  },
+  onClick,
+  className,
+}) {
+  const statusColor =
+    status === "Focusing"
+      ? "bg-success"
+      : status === "Idle"
+      ? "bg-text/40"
+      : "bg-danger";
+
+  return (
+    <div
+      className={`card ${onClick ? "cursor-pointer hover:shadow-lg transition" : ""} ${className ?? ""}`}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+    >
+      <h2 className="section-title">Profile</h2>
+
+      <div className="flex items-center gap-4 mt-4">
+
+        <div className="w-14 h-14 rounded-full bg-surfaceLight flex items-center justify-center text-2xl font-bold text-primary">
+          {username[0].toUpperCase()}
+        </div>
+
+        <div>
+          <p className="text-xl font-semibold text-textLight">{username}</p>
+
+          <div className="flex items-center gap-2 mt-1">
+            <span className={`w-3 h-3 rounded-full ${statusColor}`}></span>
+            <span className="text-sm text-textLight/70">{status}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 grid grid-cols-2 gap-4">
+        <div className="bg-surfaceLight p-3 rounded-lg">
+          <p className="text-sm text-textLight/60">Total Sessions</p>
+          <p className="text-2xl font-bold text-primary">
+            {lifetimeStats.totalSessions}
+          </p>
+        </div>
+
+        <div className="bg-surfaceLight p-3 rounded-lg">
+          <p className="text-sm text-textLight/60">Total Minutes</p>
+          <p className="text-2xl font-bold text-accent">
+            {lifetimeStats.totalMinutes}
+          </p>
+        </div>
+
+        <div className="bg-surfaceLight p-3 rounded-lg">
+          <p className="text-sm text-textLight/60">Longest Streak</p>
+          <p className="text-2xl font-bold text-primary">
+            {lifetimeStats.longestStreak}
+          </p>
+        </div>
+
+        <div className="bg-surfaceLight p-3 rounded-lg">
+          <p className="text-sm text-textLight/60">Avg Session (min)</p>
+          <p className="text-2xl font-bold text-accent">
+            {lifetimeStats.averageSession}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
