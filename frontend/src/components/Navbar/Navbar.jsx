@@ -18,12 +18,12 @@ export default function Navbar({ onNavigate, onLogout }) {
         >
           Profile
         </button>
-        <button
+        {/* <button
           className="hover:text-textLight transition"
           onClick={() => onNavigate && onNavigate("settings")}
         >
           Settings
-        </button>
+        </button> */}
         <button 
           className="text-danger hover:text-danger/80 transition"
           onClick={() => onLogout && onLogout()}
