@@ -4,7 +4,7 @@
 const RULE_ID_INSTAGRAM = 1;
 const RULE_ID_YOUTUBE = 2;
 const RULE_ID_NETFLIX = 3;
-const API_BASE = "https://undelved-censorable-ethan.ngrok-free.dev/"; // your FastAPI backend
+const API_BASE = "https://undelved-censorable-ethan.ngrok-free.dev"; 
 
 async function enableBlocking() {
   try {
