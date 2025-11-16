@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import api from '../../api';
+import api, { apiPost, apiPut } from '../../api';
 
 const TIMER_MODES = {
   POMODORO: {
@@ -33,6 +33,8 @@ export default function FocusTimer() {
   const [showSettings, setShowSettings] = useState(false);
   const [pendingMode, setPendingMode] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [activeSessionId, setActiveSessionId] = useState(null);
+  const sessionStartRef = useRef(null);
 
   const intervalRef = useRef(null);
   const audioRef = useRef(null);
@@ -59,34 +61,63 @@ export default function FocusTimer() {
 
   // === TIMER CONTROLS ===
 
-  async function startTimer() {
-    setIsActive(true);
-
-    if (sessionType === "work") {
+    async function startTimer() {
+        setIsActive(true);
         updateStatus("Focusing");
-    } else {
-        updateStatus("Break");
-    }
-}
 
-  async function pauseTimer() {
-    setIsActive(false);
-    updateStatus("Idle");
-  }
+        const now = new Date().toISOString();
+        sessionStartRef.current = now;
 
-  async function resetTimer() {
-    setIsActive(false);
-    setSessionType("work");
-    setCycleCount(0);
+        const session = await apiPost("/study-sessions/", {
+            start_time: now,
+            end_time: now,
+            studying_duration: 0
+        });
 
-    if (mode === "CUSTOM") {
-      setTimeLeft(customWork * 60);
-    } else {
-      setTimeLeft(TIMER_MODES[mode].work);
+        setActiveSessionId(session.uid);
     }
 
-    updateStatus("Idle");
-  }
+    async function pauseTimer() {
+        setIsActive(false);
+        updateStatus("Idle");
+
+        if (activeSessionId && sessionStartRef.current) {
+            const now = new Date().toISOString();
+            const duration = Math.floor((new Date(now) - new Date(sessionStartRef.current)) / 1000 / 60);
+
+            // Update session
+            await apiPut(`/study-sessions/${activeSessionId}`, {
+                end_time: now,
+                studying_duration: duration
+            });
+
+            // Add to daily stats
+            await api.addDailyProgress({
+                minutes: duration,
+                sessions: 1
+            });
+        }
+    }
+
+    async function resetTimer() {
+        if (activeSessionId && sessionStartRef.current) {
+            const now = new Date().toISOString();
+            const duration = Math.floor((new Date(now) - new Date(sessionStartRef.current)) / 1000 / 60);
+
+            await apiPut(`/study-sessions/${activeSessionId}`, {
+                end_time: now,
+                studying_duration: duration
+            });
+        }
+
+        setActiveSessionId(null);
+        sessionStartRef.current = null;
+        setIsActive(false);
+        setSessionType("work");
+        setCycleCount(0);
+        setTimeLeft(TIMER_MODES[mode].work);
+        updateStatus("Idle");
+    }
 
   async function nextSession() {
     let nextType = sessionType;

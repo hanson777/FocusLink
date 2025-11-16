@@ -4,9 +4,9 @@ import { apiGet } from "../../api";
 export default function UserProfileCard({
   username = "John",
   lifetimeStats = {
-    totalSessions: 42,
-    totalMinutes: 2100,
-    longestStreak: 6,
+    totalSessions: 3,
+    totalMinutes: 142,
+    longestStreak: 2,
     averageSession: 38,
   },
   onClick,
@@ -22,7 +22,7 @@ export default function UserProfileCard({
 
   async function fetchStatus() {
     try {
-      const data = await apiGet("/api/user-status");
+      const data = await apiGet("/user-status/me");
       // backend returns { uid, status, user_uid, created_at, updated_at }
       setStatus(data.status ?? "Idle");
     } catch (err) {

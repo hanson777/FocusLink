@@ -17,46 +17,81 @@ export default function DailyGoalCard() {
   }, []);
 
   async function loadGoals() {
-    const list = await apiGet("/daily-goals/");
+    try {
+      const list = await apiGet("/daily-goals/");
 
-    // If the user has no goals yet, create them
-    if (!list || list.length === 0) {
-      const created = await apiPost("/daily-goals/", {
-        minutes_goal: 90,
-        session_goal: 3,
-      });
+      // If the user has no goals yet, create them
+      if (!list || list.length === 0) {
+        try {
+          const created = await apiPost("/daily-goals/", {
+            minutes_goal: 90,
+            session_goal: 3,
+          });
 
+          setGoals({
+            uid: created.uid,
+            minutes: created.minutes_goal,
+            sessions: created.session_goal,
+          });
+          return;
+        } catch (createError) {
+          console.error("Failed to create default goals:", createError);
+          // Set default values if creation fails
+          setGoals({
+            uid: null,
+            minutes: 90,
+            sessions: 3,
+          });
+          return;
+        }
+      }
+
+      const g = list[0];
       setGoals({
-        uid: created.uid,
-        minutes: created.minutes_goal,
-        sessions: created.session_goal,
+        uid: g.uid,
+        minutes: g.minutes_goal,
+        sessions: g.session_goal,
       });
-      return;
+    } catch (err) {
+      console.error("Failed to load goals:", err);
+      // Set default values if API call fails (e.g., CORS error)
+      setGoals({
+        uid: null,
+        minutes: 90,
+        sessions: 3,
+      });
     }
-
-    const g = list[0];
-    setGoals({
-      uid: g.uid,
-      minutes: g.minutes_goal,
-      sessions: g.session_goal,
-    });
   }
 
   async function updateGoals(newGoals) {
-    const payload = {
-      minutes_goal: newGoals.minutes,
-      session_goal: newGoals.sessions,
-    };
+    try {
+      const payload = {
+        minutes_goal: newGoals.minutes,
+        session_goal: newGoals.sessions,
+      };
 
-    const data = await apiPut(`/daily-goals/${goals.uid}`, payload);
+      // If no uid, create new goal instead of updating
+      if (!goals.uid) {
+        const created = await apiPost("/daily-goals/", payload);
+        setGoals({
+          uid: created.uid,
+          minutes: created.minutes_goal,
+          sessions: created.session_goal,
+        });
+      } else {
+        const data = await apiPut(`/daily-goals/${goals.uid}`, payload);
+        setGoals({
+          uid: data.uid,
+          minutes: data.minutes_goal,
+          sessions: data.session_goal,
+        });
+      }
 
-    setGoals({
-      uid: data.uid,
-      minutes: data.minutes_goal,
-      sessions: data.session_goal,
-    });
-
-    setEditing(false);
+      setEditing(false);
+    } catch (err) {
+      console.error("Failed to update goals:", err);
+      alert("Failed to save goals. Please try again.");
+    }
   }
 
   function startEditing() {
