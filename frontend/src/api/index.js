@@ -1,4 +1,7 @@
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL ||
+  "https://undelved-censorable-ethan.ngrok-free.dev/"
+).replace(/\/$/, "");
 
 const defaultHeaders = {
   "Content-Type": "application/json",
@@ -72,22 +75,40 @@ async function request(path, options = {}) {
   // Add authorization header if token exists (except for auth endpoints)
   if (token && !path.includes("/auth/")) {
     headers["Authorization"] = `Bearer ${token}`;
+    headers["ngrok-skip-browser-warning"] = "69420";
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers,
-    ...options,
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      headers,
+      ...options,
+    });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(
-      `Request to ${path} failed with ${response.status}: ${errorText}`
-    );
+    // Handle CORS errors (network failures)
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `Request to ${path} failed with ${response.status}: ${errorText}`
+      );
+    }
+
+    if (response.status === 204) return null;
+    return response.json();
+  } catch (error) {
+    // Handle network errors (CORS, connection failures, etc.)
+    if (
+      error.name === "TypeError" &&
+      error.message.includes("Failed to fetch")
+    ) {
+      const corsError = new Error(
+        `CORS or network error: Unable to reach ${path}. The backend may not allow requests from this origin.`
+      );
+      corsError.name = "NetworkError";
+      corsError.isCorsError = true;
+      throw corsError;
+    }
+    throw error;
   }
-
-  if (response.status === 204) return null;
-  return response.json();
 }
 
 export const api = {
@@ -113,11 +134,11 @@ export const api = {
   getProfile: () => request("/profile"),
   getTodayStats: () => request("/stats/today"),
   getWeeklyStats: () => request("/stats/weekly"),
-  getFriends: () => request("/friends"),
-    addFriend: (payload) =>
-    request("/friends", {
-        method: "POST",
-        body: JSON.stringify(payload),
+  getFriends: () => request("/friends/"),
+  addFriend: (payload) =>
+    request("/friends/", {
+      method: "POST",
+      body: JSON.stringify(payload),
     }),
 
   removeFriend: (friend_uid) =>
@@ -125,12 +146,13 @@ export const api = {
       method: "DELETE",
     }),
 
+  // User search
+  searchUsers: (query) => {
+    const params = new URLSearchParams({ query }).toString();
+    return request(`/users/search?${params}`);
+  },
+
   // ---- USER STATUS ----
-  updateUserStatus: (payload) =>
-    request("/api/user-status", {
-      method: "PUT",
-      body: JSON.stringify(payload),
-    }),
   updateGoals: (payload) =>
     request("/goals/daily", {
       method: "PUT",
@@ -147,14 +169,14 @@ export const api = {
       body: JSON.stringify(payload),
     }),
   updateUserStatus: (payload) =>
-    request("/api/user-status", {
+    request("/user-status/", {
       method: "PUT",
       body: JSON.stringify(payload),
     }),
-    addDailyProgress: (payload) =>
+  addDailyProgress: (payload) =>
     request("/daily-goals/add", {
-        method: "POST",
-        body: JSON.stringify(payload),
+      method: "POST",
+      body: JSON.stringify(payload),
     }),
 };
 

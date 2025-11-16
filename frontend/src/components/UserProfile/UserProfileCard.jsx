@@ -22,7 +22,7 @@ export default function UserProfileCard({
 
   async function fetchStatus() {
     try {
-      const data = await apiGet("/api/user-status");
+      const data = await apiGet("/user-status/me");
       // backend returns { uid, status, user_uid, created_at, updated_at }
       setStatus(data.status ?? "Idle");
     } catch (err) {
