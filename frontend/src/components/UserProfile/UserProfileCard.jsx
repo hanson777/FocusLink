@@ -1,5 +1,5 @@
 export default function UserProfileCard({
-  username = "Pete Seta",
+  username = "John",
   status = "Focusing", 
   lifetimeStats = {
     totalSessions: 42,
