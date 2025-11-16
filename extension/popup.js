@@ -1,4 +1,4 @@
-const API_BASE = "https://undelved-censorable-ethan.ngrok-free.dev";
+const API_BASE = "https://student-focus-app-backend.onrender.com";
 
 
 // ---------- BLOCKING HELPERS ----------
