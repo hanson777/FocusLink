@@ -156,9 +156,7 @@ export default function FocusTimer() {
             <button
               key={key}
               onClick={() => changeMode(key)}
-              className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                mode === key ? "btn-primary" : "btn-secondary"
-              }`}
+              className="btn btn-lg px-6 py-3 rounded-lg font-medium transition-all"
             >
               {cfg.name}
             </button>
