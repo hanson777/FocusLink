@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://student-focus-app-1.onrender.com"],
+    allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],

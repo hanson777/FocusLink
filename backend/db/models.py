@@ -223,7 +223,6 @@ class StudySession(SQLModel, table=True):
             default=datetime.now(),
         )
     )
-    studying_duration: int
     created_at: datetime = Field(
         sa_column=Column(
             pg.TIMESTAMP,
@@ -242,4 +241,4 @@ class StudySession(SQLModel, table=True):
     user: Optional[User] = Relationship(back_populates="study_sessions")
     
     def __repr__(self):
-        return f"<StudySession(user_uid={self.user_uid}, duration={self.studying_duration})>"
+        return f"<StudySession(user_uid={self.user_uid})>"
