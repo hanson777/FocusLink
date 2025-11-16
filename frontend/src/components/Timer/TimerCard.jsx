@@ -59,8 +59,13 @@ export default function FocusTimer() {
 
   async function startTimer() {
     setIsActive(true);
-    updateStatus("Focusing");
-  }
+
+    if (sessionType === "work") {
+        updateStatus("Focusing");
+    } else {
+        updateStatus("Break");
+    }
+}
 
   async function pauseTimer() {
     setIsActive(false);
@@ -134,16 +139,20 @@ export default function FocusTimer() {
     else updateStatus("Break");
   }
 
-  async function changeMode(newMode) {
-    setMode(newMode);
+async function changeMode(newMode) {
     setIsActive(false);
-    setSessionType('work');
+    setSessionType("work");
     setCycleCount(0);
+    setMode(newMode);
 
-    setTimeLeft(newMode === "CUSTOM" ? customWork * 60 : TIMER_MODES[newMode].work);
-
+    setTimeLeft(
+        newMode === "CUSTOM" 
+        ? customWork * 60 
+        : TIMER_MODES[newMode].work
+    );
+    
     updateStatus("Idle");
-  }
+    }
 
   function updateCustomSettings() {
     if (mode === 'CUSTOM' && sessionType === 'work') {
