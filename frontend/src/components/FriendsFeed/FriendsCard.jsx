@@ -5,7 +5,7 @@ export default function FriendsCard({
     <div className="card">
       <h2 className="section-title">Friends</h2>
 
-      <div className="space-y-3 mt-4">
+      <div className="space-y-3 mt-4 mb-4">
         {friends.map((friend, i) => (
           <div 
             key={i}
@@ -26,6 +26,9 @@ export default function FriendsCard({
           </div>
         ))}
       </div>
+
+    <button className="btn btn-lg">Add friend</button>
+      
     </div>
   );
 }
