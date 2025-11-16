@@ -11,6 +11,13 @@ class StudySessionService:
     
     async def create_study_session(self, session_data: StudySessionCreateModel, user_uid: uuid.UUID, session: AsyncSession):
         session_dict = session_data.model_dump()
+        
+        # Strip timezone info to match database TIMESTAMP WITHOUT TIME ZONE
+        if session_dict.get('start_time') and session_dict['start_time'].tzinfo:
+            session_dict['start_time'] = session_dict['start_time'].replace(tzinfo=None)
+        if session_dict.get('end_time') and session_dict['end_time'].tzinfo:
+            session_dict['end_time'] = session_dict['end_time'].replace(tzinfo=None)
+        
         study_session = StudySession(**session_dict)
         study_session.user_uid = user_uid
         session.add(study_session)
@@ -45,6 +52,11 @@ class StudySessionService:
             raise HTTPException(status_code=403, detail="not authorized to update this session")
         
         session_dict = session_data.model_dump()
+        
+        # Strip timezone info to match database TIMESTAMP WITHOUT TIME ZONE
+        if session_dict.get('end_time') and session_dict['end_time'].tzinfo:
+            session_dict['end_time'] = session_dict['end_time'].replace(tzinfo=None)
+        
         for key, value in session_dict.items():
             setattr(study_session, key, value)
         

@@ -19,8 +19,10 @@ async def get_my_status(
 ):
     status = await user_status_service.get_user_status(current_user.uid, session)
     
+    # Auto-create default status if doesn't exist
     if not status:
-        raise HTTPException(status_code=404, detail="Status not found")
+        default_status = UserStatusCreateModel(status="idle")
+        status = await user_status_service.create_user_status(default_status, current_user.uid, session)
     
     return status
 
