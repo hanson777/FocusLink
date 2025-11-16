@@ -9,14 +9,14 @@ users_router = APIRouter()
 user_service = UserService()
 
 
+@users_router.get("/search", response_model=list[UserSearchModel])
+async def search_users(query: str, session: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user)):
+    return await user_service.search_user(query, session)
+
+
 @users_router.get("/{user_uid}", response_model=UserProfileStatisticsModel)
 async def get_user(user_uid: str, session: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user)):
     return await user_service.get_user_by_uid(user_uid, session)
-
-
-@users_router.get("/search", response_model=list[UserSearchModel])
-async def search_users(query: str, session: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user)):
-    return await user_service.search_users(query, session)
 
 
 

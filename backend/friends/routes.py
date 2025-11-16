@@ -18,6 +18,7 @@ async def get_my_friends(
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session)
 ):
+    print(f"[friends] get_my_friends called for user: {current_user.username}")
     friends = await friend_service.get_my_friends(current_user.uid, session)
     
     return [

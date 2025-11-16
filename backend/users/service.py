@@ -1,5 +1,6 @@
 import uuid
 
+from fastapi import HTTPException
 from sqlmodel import select, func
 from sqlmodel.ext.asyncio.session import AsyncSession
 from backend.db.models import User, StudySession
@@ -10,12 +11,17 @@ class UserService:
     async def get_user_by_uid(self, uid: uuid.UUID, session: AsyncSession):
         statement = select(User).where(User.uid == uid)
         result = await session.exec(statement)
+        user = result.first()
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
         stats_obj = await self.calculate_user_stats(uid, session)
         user_stats = UserProfileStatisticsModel(
             uid=uid,
-            username = result.first().username,
-            first_name=result.first().first_name,
-            last_name=result.first().last_name,
+            username=user.username,
+            first_name=user.first_name,
+            last_name=user.last_name,
             total_study_sessions=stats_obj["total_sessions"],
             total_study_minutes=stats_obj["total_minutes"],
             average_session_minutes=stats_obj["average_minutes"],
