@@ -113,6 +113,12 @@ function renderInlineLoginScreen() {
   const loginBtn = document.getElementById("loginBtn");
   const backBtn = document.getElementById("backBtn");
 
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      loginBtn.click();   
+    }
+  });  
+
   loginBtn.addEventListener("click", async () => {
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value.trim();
@@ -198,6 +204,12 @@ function renderRegisterScreen() {
     const statusEl = document.getElementById("status");
     const registerBtn = document.getElementById("registerBtn");
     const backBtn = document.getElementById("backBtn");
+
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+            registerBtn.click();   
+        }
+      });
   
     registerBtn.addEventListener("click", async () => {
       const username  = document.getElementById("regUsername").value.trim();
