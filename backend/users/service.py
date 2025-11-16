@@ -5,7 +5,9 @@ from sqlmodel import select, func
 from sqlmodel.ext.asyncio.session import AsyncSession
 from backend.db.models import User, StudySession
 from .schemas import UserProfileStatisticsModel
+from backend.studysession.service import StudySessionService
 
+study_session_service = StudySessionService()
 
 class UserService:
     async def get_user_by_uid(self, uid: uuid.UUID, session: AsyncSession):
@@ -36,17 +38,24 @@ class UserService:
         return users
 
     async def calculate_user_stats(self, uid: uuid.UUID, session: AsyncSession):
-        statement = select(func.count(StudySession.uid)).where(StudySession.user_uid == uid)
-        result = await session.exec(statement)
-        row = result.first()
-        total_sessions = row if row else 0
+        all_sessions = await study_session_service.get_all_sessions_by_id(uid, session)
+        
+        total_sessions = len(all_sessions)
+        
+        total_minutes = 0
+        for sess in all_sessions:
+            if sess.start_time and sess.end_time:
+                duration = sess.end_time - sess.start_time
+                total_minutes += duration.total_seconds() / 60
+        
+        average_minutes = total_minutes / total_sessions if total_sessions > 0 else 0
         
         longest_streak = await self.calculate_streak(uid, session)
         
         return {
             "total_sessions": total_sessions,
-            "total_minutes": 0,  # Removed studying_duration field
-            "average_minutes": 0,  # Removed studying_duration field
+            "total_minutes": int(total_minutes),
+            "average_minutes": int(average_minutes),
             "longest_streak": longest_streak
         }
 
