@@ -1,3 +1,5 @@
+Link to Devpost demo: https://devpost.com/software/focuslink
+
 ## Inspiration
 As university students, we noticed how easy it is to lose consistency when studying alone. Pomodoro timers help, until motivation dies shortly after. Social apps do more harm than good. We wanted a tool that keeps us focused and accountable, without becoming another distraction. That’s how FocusLink was born: a social productivity app - paired with a distraction-blocking browser extension -  that brings friends together to build better study habits.
 
