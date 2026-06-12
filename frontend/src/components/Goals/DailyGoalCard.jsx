@@ -25,7 +25,7 @@ export default function DailyGoalCard() {
     const handleStudySessionCreated = () => {
       loadTodayStats();
     };
-    window.addEventListener('studySessionCreated', handleStudySessionCreated);
+    window.g('studySessionCreated', handleStudySessionCreated);
     
     // Refresh stats every 30 seconds to update in real-time
     const interval = setInterval(loadTodayStats, 30000);
